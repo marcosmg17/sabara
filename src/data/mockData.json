@@ -1,0 +1,215 @@
+
+{
+  "patients": [
+    {
+      "id": 1,
+      "name": "Ana Silva",
+      "email": "ana.silva@example.com",
+      "password": "senha123",
+      "age": 35,
+      "gender": "Feminino",
+      "appointments": [
+        {
+          "id": 101,
+          "date": "2025-05-10T14:30:00",
+          "doctor": "Dr. Ricardo Matos",
+          "specialty": "Cardiologia",
+          "status": "Agendado"
+        },
+        {
+          "id": 102,
+          "date": "2025-05-15T09:00:00",
+          "doctor": "Dra. Camila Souza",
+          "specialty": "Dermatologia",
+          "status": "Realizado"
+        }
+      ],
+      "examResults": [
+        {
+          "id": 201,
+          "name": "Hemograma Completo",
+          "date": "2025-05-05T10:15:00",
+          "status": "Disponível",
+          "pdfLink": "#"
+        }
+      ],
+      "medicalHistory": [
+        {
+          "id": 301,
+          "date": "2025-04-28T15:20:00",
+          "doctor": "Dr. Paulo Mendes",
+          "notes": "Paciente apresentou sintomas de gripe. Recomendado repouso e medicação."
+        }
+      ],
+      "triageHistory": [
+        {
+          "id": 401,
+          "date": "2025-05-02T08:45:00",
+          "symptoms": ["Febre", "Dor de cabeça", "Tosse"],
+          "priority": "Moderado",
+          "recommendation": "Consulta em até 2 horas"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Carlos Oliveira",
+      "email": "carlos.oliveira@example.com",
+      "password": "senha456",
+      "age": 42,
+      "gender": "Masculino",
+      "appointments": [
+        {
+          "id": 103,
+          "date": "2025-05-12T11:30:00",
+          "doctor": "Dr. Rafael Lopes",
+          "specialty": "Ortopedia",
+          "status": "Agendado"
+        }
+      ],
+      "examResults": [],
+      "medicalHistory": [
+        {
+          "id": 302,
+          "date": "2025-04-30T14:00:00",
+          "doctor": "Dra. Márcia Costa",
+          "notes": "Paciente realizou consulta de rotina. Todos os exames normais."
+        }
+      ],
+      "triageHistory": []
+    },
+    {
+      "id": 3,
+      "name": "Maria Santos",
+      "email": "maria.santos@example.com",
+      "password": "senha789",
+      "age": 28,
+      "gender": "Feminino",
+      "appointments": [],
+      "examResults": [],
+      "medicalHistory": [],
+      "triageHistory": [
+        {
+          "id": 402,
+          "date": "2025-05-01T13:15:00",
+          "symptoms": ["Dor abdominal", "Náusea"],
+          "priority": "Alto",
+          "recommendation": "Consulta imediata"
+        }
+      ]
+    }
+  ],
+  "beds": [
+    {
+      "id": 1,
+      "room": "101A",
+      "floor": 1,
+      "status": "Ocupado",
+      "patient": "Ana Silva",
+      "estimatedRelease": "2025-05-07T16:00:00",
+      "cleaningStatus": "Pendente"
+    },
+    {
+      "id": 2,
+      "room": "101B",
+      "floor": 1,
+      "status": "Disponível",
+      "patient": null,
+      "estimatedRelease": null,
+      "cleaningStatus": "Limpo"
+    },
+    {
+      "id": 3,
+      "room": "102A",
+      "floor": 1,
+      "status": "Em Limpeza",
+      "patient": null,
+      "estimatedRelease": null,
+      "cleaningStatus": "Em Progresso"
+    },
+    {
+      "id": 4,
+      "room": "201A",
+      "floor": 2,
+      "status": "Ocupado",
+      "patient": "João Santos",
+      "estimatedRelease": "2025-05-08T10:00:00",
+      "cleaningStatus": "Pendente"
+    },
+    {
+      "id": 5,
+      "room": "201B",
+      "floor": 2,
+      "status": "Reservado",
+      "patient": "Maria Pereira",
+      "estimatedRelease": null,
+      "cleaningStatus": "Limpo"
+    }
+  ],
+  "doctors": [
+    {
+      "id": 1,
+      "name": "Dr. Ricardo Matos",
+      "specialty": "Cardiologia",
+      "imageUrl": "/placeholder.svg",
+      "availability": [
+        { "day": "Segunda", "hours": "09:00 - 17:00" },
+        { "day": "Quarta", "hours": "13:00 - 19:00" },
+        { "day": "Sexta", "hours": "08:00 - 12:00" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Dra. Camila Souza",
+      "specialty": "Dermatologia",
+      "imageUrl": "/placeholder.svg",
+      "availability": [
+        { "day": "Terça", "hours": "08:00 - 16:00" },
+        { "day": "Quinta", "hours": "10:00 - 18:00" }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Dr. Rafael Lopes",
+      "specialty": "Ortopedia",
+      "imageUrl": "/placeholder.svg",
+      "availability": [
+        { "day": "Segunda", "hours": "13:00 - 19:00" },
+        { "day": "Quarta", "hours": "08:00 - 12:00" },
+        { "day": "Sexta", "hours": "13:00 - 17:00" }
+      ]
+    }
+  ],
+  "services": [
+    {
+      "id": 1,
+      "name": "Triagem Automatizada com IA",
+      "description": "Utilizamos inteligência artificial para analisar sintomas e classificar pacientes por gravidade em tempo real.",
+      "icon": "user"
+    },
+    {
+      "id": 2,
+      "name": "Gestão Dinâmica de Leitos",
+      "description": "Monitoramento em tempo real da disponibilidade de leitos, com notificações automáticas para equipe de limpeza.",
+      "icon": "bed"
+    },
+    {
+      "id": 3,
+      "name": "Comunicação Digital Integrada",
+      "description": "Informações sobre andamento do atendimento, alta e resultados de exames diretamente no aplicativo ou WhatsApp.",
+      "icon": "smartphone"
+    },
+    {
+      "id": 4,
+      "name": "Consultas Especializadas",
+      "description": "Atendimento com médicos especializados em diferentes áreas da medicina.",
+      "icon": "hospital"
+    },
+    {
+      "id": 5,
+      "name": "Exames Laboratoriais",
+      "description": "Realizamos diversos tipos de exames com resultados rápidos e precisos.",
+      "icon": "file-text"
+    }
+  ]
+}
