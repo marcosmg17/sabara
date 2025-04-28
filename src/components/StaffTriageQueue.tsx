@@ -12,7 +12,7 @@ const StaffTriageQueue = () => {
   const { assignDoctor, removeTriage } = useTriageActions();
   const isMobile = useIsMobile();
 
-  // Auto-assign doctors to waiting patients
+
   useEffect(() => {
     const waitingPatients = triageQueue.filter(triage => triage.status === 'waiting');
     if (waitingPatients.length > 0) {

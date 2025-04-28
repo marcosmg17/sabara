@@ -19,13 +19,13 @@ const ExamUpload: React.FC<ExamUploadProps> = ({ onUpload }) => {
   const [users, setUsers] = useState<any[]>([]);
   const { toast } = useToast();
 
-  // Load users from localStorage on component mount
+
   useEffect(() => {
-    // Get users from localStorage
+    
     const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
     console.log('All users from localStorage:', storedUsers);
     
-    // All users in the localStorage are considered to have accounts
+   
     setUsers(storedUsers);
   }, []);
 

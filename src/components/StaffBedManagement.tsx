@@ -23,13 +23,13 @@ const StaffBedManagement = () => {
   const { data: beds, isLoading } = useQuery({
     queryKey: ['beds'],
     queryFn: () => {
-      // Get beds from localStorage or use mock data if not available
+    
       const storedBeds = localStorage.getItem('hospital_beds');
       if (storedBeds) {
         return JSON.parse(storedBeds);
       }
       
-      // If no data in localStorage, initialize with mock data
+  
       const initialBeds = [
         {
           id: 1,
@@ -91,7 +91,7 @@ const StaffBedManagement = () => {
         return bed;
       });
       
-      // Store updated beds in localStorage
+
       localStorage.setItem('hospital_beds', JSON.stringify(updatedBeds));
       return updatedBeds;
     },

@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Hospital, User, Smartphone, FileText, Phone, Bed } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
-// Import mock data
+
 import mockData from '../data/mockData.json';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -17,7 +17,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const Services: React.FC = () => {
-  // Using react-query to fetch data (simulating API call with mock data)
+  
   const { data: services, isLoading } = useQuery({
     queryKey: ['services'],
     queryFn: () => Promise.resolve(mockData.services),

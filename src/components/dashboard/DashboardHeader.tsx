@@ -13,7 +13,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userName }) => {
   const { toast } = useToast();
 
   const handleLogout = () => {
-    // Clear user data from session storage
+
     sessionStorage.removeItem('currentUser');
     
     toast({
@@ -21,7 +21,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userName }) => {
       description: "Você foi desconectado com sucesso.",
     });
     
-    // Redirect to home
+
     navigate('/');
   };
 

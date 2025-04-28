@@ -11,13 +11,10 @@ export const useTriageQueue = () => {
     }
   });
 
-  // Sort triage entries by priority and status
   const sortedQueue = [...triageQueue].sort((a: TriageEntry, b: TriageEntry) => {
-    // First sort by status (waiting first)
     if (a.status === 'waiting' && b.status !== 'waiting') return -1;
     if (a.status !== 'waiting' && b.status === 'waiting') return 1;
     
-    // Then sort by priority order
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 

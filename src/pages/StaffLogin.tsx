@@ -106,14 +106,7 @@ const StaffLogin = () => {
               </Button>
             </form>
             
-            <div className="mt-6 p-4 bg-gray-100 rounded-md">
-              <h2 className="font-semibold mb-2">Contas disponíveis para teste:</h2>
-              <div className="space-y-2 text-sm">
-                <p><strong>Funcionário:</strong> staff@sabarahealth.com / senha: staff123</p>
-                <p><strong>Médicos:</strong> primeira.parte.do.nome@sabarahealth.com / senha: doctor123</p>
-                <p className="text-gray-600">Exemplo: ricardo.matos@sabarahealth.com</p>
-              </div>
-            </div>
+            
           </div>
         </div>
       </main>

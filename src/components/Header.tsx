@@ -53,7 +53,7 @@ const Header: React.FC = () => {
           </nav>
         </div>
         
-        {/* Mobile Navigation */}
+       
         {isMenuOpen && (
           <div className="md:hidden bg-white rounded-b-lg shadow-lg mt-2 py-2">
             <Link to="/" className="block px-4 py-2 text-gray-700 hover:bg-sabara-secondary hover:text-sabara-primary">

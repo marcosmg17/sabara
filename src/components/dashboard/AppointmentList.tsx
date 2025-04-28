@@ -17,7 +17,7 @@ interface AppointmentListProps {
 }
 
 const AppointmentList: React.FC<AppointmentListProps> = ({ appointments }) => {
-  // Helper function to format the date
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('pt-BR', {
@@ -27,7 +27,7 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ appointments }) => {
     }).format(date);
   };
 
-  // Helper function to format the time
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('pt-BR', {
@@ -36,7 +36,7 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ appointments }) => {
     }).format(date);
   };
 
-  // Get status badge color
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'agendado':

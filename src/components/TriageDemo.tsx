@@ -30,7 +30,7 @@ const TriageDemo: React.FC = () => {
       setSelectedSymptoms([...selectedSymptoms, symptom]);
     }
 
-    // Reset triage result when symptoms change
+  
     setTriageResult(null);
   };
 
@@ -39,22 +39,22 @@ const TriageDemo: React.FC = () => {
 
     setIsAnalyzing(true);
     
-    // Simulate AI analysis with a delay
+
     setTimeout(() => {
-      // Simple mock AI logic - in reality, this would be a sophisticated algorithm
-      let priority = 4; // Default to non-urgent
+     
+      let priority = 4; 
       
-      // Logic to determine priority
+      
       if (selectedSymptoms.includes("Dificuldade respiratória") || 
           selectedSymptoms.includes("Dor no peito")) {
-        priority = 0; // Emergency
+        priority = 0; 
       } else if (selectedSymptoms.includes("Febre") && 
                 (selectedSymptoms.includes("Tosse") || selectedSymptoms.includes("Dificuldade respiratória"))) {
-        priority = 1; // Very urgent
+        priority = 1; 
       } else if (selectedSymptoms.includes("Febre") || selectedSymptoms.includes("Dor abdominal")) {
-        priority = 2; // Urgent
+        priority = 2; 
       } else if (selectedSymptoms.length >= 3) {
-        priority = 3; // Semi-urgent
+        priority = 3; 
       }
 
       // Generate recommendations based on priority

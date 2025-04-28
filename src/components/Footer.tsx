@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
     <footer className="bg-sabara-primary text-white pt-10 pb-6">
       <div className="container mx-auto px-4">
         <div className="row">
-          {/* Hospital Info */}
+          
           <div className="w-full md:w-1/3 mb-6 md:mb-0 px-4">
             <div className="flex items-center mb-4">
               <Hospital className="h-8 w-8 mr-2" />
@@ -31,7 +31,7 @@ const Footer: React.FC = () => {
             </div>
           </div>
           
-          {/* Links */}
+         
           <div className="w-full md:w-1/3 mb-6 md:mb-0 px-4">
             <h4 className="text-lg font-semibold mb-4">Links Úteis</h4>
             <ul className="space-y-2">
@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
             </ul>
           </div>
           
-          {/* Services */}
+       
           <div className="w-full md:w-1/3 px-4">
             <h4 className="text-lg font-semibold mb-4">Serviços</h4>
             <ul className="space-y-2">
@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         
-        {/* Copyright */}
+       
         <div className="border-t border-sabara-secondary/30 mt-8 pt-6 text-center">
           <p>&copy; {new Date().getFullYear()} Hospital Sabara Health. Todos os direitos reservados.</p>
         </div>

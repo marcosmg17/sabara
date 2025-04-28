@@ -13,7 +13,7 @@ const DigitalCommunication: React.FC = () => {
   const [activeTab, setActiveTab] = useState('whatsapp');
   
   const handleSubscribe = () => {
-    // Simulate subscription process
+  
     setTimeout(() => {
       setIsSubscribed(true);
     }, 1000);
@@ -40,11 +40,11 @@ const DigitalCommunication: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          {/* Demo Mobile Phone */}
+          
           <div className="relative mx-auto">
             <div className="w-64 h-[500px] bg-gray-800 rounded-[36px] p-3 mx-auto shadow-xl">
               <div className="bg-white h-full w-full rounded-[28px] overflow-hidden flex flex-col">
-                {/* Notification Header */}
+                
                 <div className="bg-sabara-primary text-white p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Hospital className="h-6 w-6" />
@@ -53,7 +53,7 @@ const DigitalCommunication: React.FC = () => {
                   <p className="text-sm">Centro de Notificações</p>
                 </div>
                 
-                {/* Notification Content */}
+              
                 <div className="flex-1 overflow-auto p-3 space-y-3">
                   {activeTab === 'whatsapp' ? (
                     <>
@@ -110,7 +110,7 @@ const DigitalCommunication: React.FC = () => {
                   )}
                 </div>
                 
-                {/* Mobile Navigation */}
+               
                 <div className="h-10 bg-gray-100 flex justify-center items-center">
                   <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="bg-transparent">
@@ -126,7 +126,7 @@ const DigitalCommunication: React.FC = () => {
               </div>
             </div>
             
-            {/* Notification badges */}
+          
             <div className="absolute top-1/4 -right-8 bg-white p-4 rounded-full shadow-lg animate-pulse-slow">
               <Bell className="h-6 w-6 text-sabara-primary" />
             </div>
@@ -135,7 +135,6 @@ const DigitalCommunication: React.FC = () => {
             </div>
           </div>
 
-          {/* Control Panel */}
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-sabara-primary">Configure suas notificações</CardTitle>
@@ -210,10 +209,10 @@ const DigitalCommunication: React.FC = () => {
   );
 };
 
-// Missing component imports
+
 const Hospital = Smartphone;
 
-// Simple Switch component since we're not importing shadcn's switch
+
 const Switch = ({ checked }: { checked: boolean }) => (
   <div className={`w-10 h-5 rounded-full p-1 ${checked ? 'bg-sabara-primary' : 'bg-gray-300'}`}>
     <div 

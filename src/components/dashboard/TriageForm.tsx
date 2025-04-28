@@ -43,13 +43,13 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Collect all symptoms, including "Other" if entered
+
     let allSymptoms = [...selectedSymptoms];
     if (showOtherInput && otherSymptoms.trim()) {
       allSymptoms = allSymptoms.filter(s => s !== "Outros");
       allSymptoms.push(`Outros: ${otherSymptoms.trim()}`);
     } else if (showOtherInput) {
-      // If "Outros" is selected but no input, remove it
+
       allSymptoms = allSymptoms.filter(s => s !== "Outros");
     }
 
@@ -62,7 +62,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       return;
     }
 
-    // Calculate priority based on symptoms
+
     let priority = 'Baixo';
     if (allSymptoms.some(s => s.includes("Dificuldade respiratória")) || 
         allSymptoms.some(s => s.includes("Dor no peito"))) {
@@ -83,7 +83,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       recommendation: getRecommendation(priority),
       assignedDoctor: null,
       assignedRoom: null,
-      status: 'waiting', // 'waiting', 'assigned', 'in-progress', 'completed'
+      status: 'waiting', 
     };
 
     onTriageSubmit(triageData);

@@ -8,7 +8,6 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
     const currentUser = sessionStorage.getItem('currentUser');
     if (currentUser) {
       navigate('/dashboard');

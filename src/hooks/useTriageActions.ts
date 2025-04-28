@@ -9,11 +9,9 @@ export const useTriageActions = () => {
   const queryClient = useQueryClient();
 
   const autoAssignDoctor = (currentDoctors: Doctor[], currentQueue: TriageEntry[]) => {
-    // Find available doctors who are not assigned to any patients
     const availableDoctors = currentDoctors.filter(d => d.available);
     if (availableDoctors.length === 0) return null;
 
-    // Get the first available doctor
     return availableDoctors[0];
   };
 
@@ -25,12 +23,10 @@ export const useTriageActions = () => {
       const doctor = autoAssignDoctor(currentDoctors, currentQueue);
       if (!doctor) throw new Error("No available doctors");
       
-      // Update doctor availability
       const updatedDoctors = currentDoctors.map(d => 
         d.id === doctor.id ? { ...d, available: false } : d
       );
       
-      // Update triage entry
       const updatedQueue = currentQueue.map(triage => 
         triage.id === triageId 
           ? { 

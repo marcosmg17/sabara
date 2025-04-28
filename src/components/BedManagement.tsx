@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Bed, Check, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
-// Import mock data
+
 import mockData from '../data/mockData.json';
 
 const statusColors: Record<string, string> = {
@@ -22,7 +22,7 @@ const statusColors: Record<string, string> = {
 const BedManagement: React.FC = () => {
   const [currentFloor, setCurrentFloor] = useState(1);
 
-  // Using react-query to fetch data
+
   const { data: beds, isLoading } = useQuery({
     queryKey: ['beds'],
     queryFn: () => Promise.resolve(mockData.beds),
@@ -60,7 +60,7 @@ const BedManagement: React.FC = () => {
           </p>
         </div>
         
-        {/* Status summary */}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card className="shadow-sm">
             <CardContent className="pt-6">
@@ -119,7 +119,6 @@ const BedManagement: React.FC = () => {
           </Card>
         </div>
 
-        {/* Floor selector */}
         <Tabs defaultValue={`${currentFloor}`} className="mb-8">
           <div className="flex justify-center mb-4">
             <TabsList>

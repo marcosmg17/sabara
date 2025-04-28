@@ -17,7 +17,7 @@ interface TriageHistoryProps {
 }
 
 const TriageHistory: React.FC<TriageHistoryProps> = ({ triageHistory }) => {
-  // Helper function to format the date
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('pt-BR', {
@@ -29,7 +29,7 @@ const TriageHistory: React.FC<TriageHistoryProps> = ({ triageHistory }) => {
     }).format(date);
   };
 
-  // Get priority badge color
+
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'crítico':

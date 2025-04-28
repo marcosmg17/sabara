@@ -20,26 +20,26 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call with a timeout
+   
     setTimeout(() => {
       const user = mockData.patients.find(
         (patient) => patient.email === email && patient.password === password
       );
 
       if (user) {
-        // Save user to session storage (in a real app, use tokens/cookies)
+       
         sessionStorage.setItem('currentUser', JSON.stringify(user));
         
-        // Show success toast
+        
         toast({
           title: "Login realizado com sucesso!",
           description: `Bem-vindo(a) de volta, ${user.name}!`,
         });
         
-        // Redirect to dashboard
+       
         navigate('/dashboard');
       } else {
-        // Show error toast
+        
         toast({
           variant: "destructive",
           title: "Erro ao fazer login",

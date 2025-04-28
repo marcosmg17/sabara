@@ -8,7 +8,7 @@ const Hero: React.FC = () => {
     <section className="pt-20 pb-10 bg-white overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center">
-          {/* Left Content */}
+          
           <div className="md:w-1/2 mb-10 md:mb-0 md:pr-8">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
               Inovação em Saúde para o seu bem-estar
@@ -30,16 +30,21 @@ const Hero: React.FC = () => {
             </div>
           </div>
           
-          {/* Right Image */}
+         
           <div className="md:w-1/2 relative">
             <div className="bg-sabara-secondary/30 rounded-lg p-4">
-              <img 
-                src="/placeholder.svg" 
-                alt="Hospital Sabara Health" 
-                className="w-full h-auto rounded-lg shadow-xl" 
-              />
+            <video 
+                controls 
+                autoPlay 
+                loop 
+                muted
+                className="w-full h-auto rounded-lg shadow-xl"
+              >
+                <source src="/video.mp4" type="video/mp4" />
+                Seu navegador não suporta o vídeo.
+              </video>
               
-              {/* Stats Overlay */}
+              
               <div className="absolute -bottom-5 left-10 right-10 bg-white rounded-lg shadow-lg p-4 flex justify-between">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-sabara-primary">98%</p>

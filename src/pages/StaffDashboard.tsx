@@ -26,28 +26,23 @@ const StaffDashboard = () => {
       navigate('/staff-login');
     }
 
-    // Make sure to invalidate queries to refresh data
     queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
     queryClient.invalidateQueries({ queryKey: ['beds'] });
     queryClient.invalidateQueries({ queryKey: ['doctors'] });
     
-    // Initialize users if they don't exist
     const existingUsers = localStorage.getItem('users');
     if (!existingUsers || JSON.parse(existingUsers).length === 0) {
-      // Initialize with mock data patients
       localStorage.setItem('users', JSON.stringify(mockData.patients));
       console.log('Initialized users from mock data:', mockData.patients);
     }
   }, [navigate, queryClient]);
 
   const handleExamUpload = ({ userId, examName, file }: { userId: string; examName: string; file: File }) => {
-    // Get current users
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     console.log('Handling exam upload for user ID:', userId);
     console.log('All users:', users);
     
     const updatedUsers = users.map((user: any) => {
-      // Check if we should update this user (comparing by id or email)
       if ((user.id && user.id.toString() === userId) || 
           (user.email && user.email === userId)) {
         console.log('Found user to update:', user);
@@ -57,17 +52,17 @@ const StaffDashboard = () => {
           name: examName,
           date: new Date().toISOString(),
           status: 'Disponível',
-          pdfLink: URL.createObjectURL(file) // In a real app, this would be a server URL
+          pdfLink: URL.createObjectURL(file) 
         });
         return { ...user, examResults };
       }
       return user;
     });
     
-    // Update localStorage
+    
     localStorage.setItem('users', JSON.stringify(updatedUsers));
     
-    // Update current user in sessionStorage if this is their exam
+   
     const currentUserStr = sessionStorage.getItem('currentUser');
     if (currentUserStr) {
       const currentUser = JSON.parse(currentUserStr);
@@ -94,7 +89,7 @@ const StaffDashboard = () => {
       <main className="flex-grow pt-16">
         <div className="container mx-auto px-4 py-8">
           {userRole === 'doctor' ? (
-            // Doctor view - they should only see their own dashboard
+            
             <>
               <h1 className="text-3xl font-bold text-sabara-primary mb-8">Painel do Médico</h1>
               
@@ -120,7 +115,7 @@ const StaffDashboard = () => {
               </Tabs>
             </>
           ) : (
-            // Staff view - they can see all doctors and all patients
+            
             <>
               <h1 className="text-3xl font-bold text-sabara-primary mb-8">Painel de Funcionários</h1>
               

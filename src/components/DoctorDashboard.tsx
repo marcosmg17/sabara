@@ -7,7 +7,7 @@ import PatientList from './doctor/PatientList';
 import DoctorInfo from './doctor/DoctorInfo';
 
 const DoctorDashboard: React.FC = () => {
-  // Get the current logged-in doctor from localStorage
+ 
   const currentDoctor = JSON.parse(localStorage.getItem('currentDoctor') || '{}');
   const selectedDoctorId = currentDoctor.id ? currentDoctor.id.toString() : '';
   
