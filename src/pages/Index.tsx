@@ -7,7 +7,6 @@ import Services from '@/components/Services';
 import TriageDemo from '@/components/TriageDemo';
 import BedManagement from '@/components/BedManagement';
 import DigitalCommunication from '@/components/DigitalCommunication';
-import QuickAccess from '@/components/QuickAccess';
 
 const Index = () => {
   return (
@@ -15,7 +14,6 @@ const Index = () => {
       <Header />
       <main className="flex-grow pt-16">
         <Hero />
-        <QuickAccess />
         <Services />
         <TriageDemo />
         <BedManagement />
