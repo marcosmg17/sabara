@@ -3,13 +3,33 @@ import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Stethoscope } from 'lucide-react';
-import { Nurse } from '@/types/nurse';
+import { Nurse, NurseStatus } from '@/types/nurse';
 
 interface NurseInfoCardProps {
   nurse: Nurse;
 }
 
 const NurseInfoCard: React.FC<NurseInfoCardProps> = ({ nurse }) => {
+  const getStatusLabel = (status: NurseStatus) => {
+    switch (status) {
+      case 'available': return 'Disponível';
+      case 'busy': return 'Em atendimento';
+      case 'away': return 'Ausente';
+      case 'offline': return 'Offline';
+      default: return 'Desconhecido';
+    }
+  };
+
+  const getStatusColor = (status: NurseStatus) => {
+    switch (status) {
+      case 'available': return 'bg-green-500';
+      case 'busy': return 'bg-yellow-500';
+      case 'away': return 'bg-orange-500';
+      case 'offline': return 'bg-gray-500';
+      default: return 'bg-gray-300';
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -25,8 +45,18 @@ const NurseInfoCard: React.FC<NurseInfoCardProps> = ({ nurse }) => {
           </div>
           <div className="ml-4">
             <h3 className="font-medium">{nurse.name}</h3>
-            <p className="text-sm text-gray-600">{nurse.room && `Sala ${nurse.room}`}</p>
-            <Badge className="mt-1 bg-green-500">{nurse.available ? 'Disponível' : 'Em atendimento'}</Badge>
+            <p className="text-sm text-gray-600">
+              {nurse.room && `Sala ${nurse.room}`}
+              {nurse.specialty && ` • ${nurse.specialty}`}
+            </p>
+            <div className="mt-1 flex gap-2">
+              <Badge className={getStatusColor(nurse.status || 'offline')}>
+                {getStatusLabel(nurse.status || 'offline')}
+              </Badge>
+              <Badge className={nurse.available ? "bg-green-500" : "bg-red-500"}>
+                {nurse.available ? "Disponível para atendimento" : "Indisponível para atendimento"}
+              </Badge>
+            </div>
           </div>
         </div>
       </CardContent>

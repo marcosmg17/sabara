@@ -1,5 +1,6 @@
 
 import { useEffect } from 'react';
+import { NurseStatus } from '@/types/nurse';
 
 export const useInitializeData = () => {
   useEffect(() => {
@@ -16,9 +17,46 @@ export const useInitializeData = () => {
     // Initialize nurses
     if (!localStorage.getItem('nurses')) {
       const initialNurses = [
-        { id: 1, name: "Ana Silva", available: true, room: "Triagem 1" },
-        { id: 2, name: "Carlos Oliveira", available: true, room: "Triagem 2" },
-        { id: 3, name: "Lucia Santos", available: true, room: "Triagem 3" }
+        { 
+          id: 1, 
+          name: "Ana Silva", 
+          available: true, 
+          status: 'available' as NurseStatus, 
+          room: "Triagem 1",
+          specialty: "Emergência"
+        },
+        { 
+          id: 2, 
+          name: "Carlos Oliveira", 
+          available: true, 
+          status: 'available' as NurseStatus, 
+          room: "Triagem 2",
+          specialty: "Pediatria"
+        },
+        { 
+          id: 3, 
+          name: "Lucia Santos", 
+          available: true, 
+          status: 'available' as NurseStatus, 
+          room: "Triagem 3",
+          specialty: "Clínica Médica"
+        },
+        { 
+          id: 4, 
+          name: "Pedro Mendes", 
+          available: true, 
+          status: 'available' as NurseStatus, 
+          room: "Triagem 4",
+          specialty: "Ortopedia"
+        },
+        { 
+          id: 5, 
+          name: "Julia Costa", 
+          available: true, 
+          status: 'available' as NurseStatus, 
+          room: "Triagem 5",
+          specialty: "UTI"
+        }
       ];
       localStorage.setItem('nurses', JSON.stringify(initialNurses));
     }

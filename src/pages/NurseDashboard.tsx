@@ -4,15 +4,21 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StaffTriageQueue from '@/components/StaffTriageQueue';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ListCheck, User, BellRing } from 'lucide-react';
+import { ListCheck, User, BellRing, Users } from 'lucide-react';
 import { useNurseDashboard } from '@/hooks/useNurseDashboard';
 import NurseInfoCard from '@/components/nurse/NurseInfoCard';
+import NurseProfileCard from '@/components/nurse/NurseProfileCard';
 import OperationsSummaryCard from '@/components/nurse/OperationsSummaryCard';
 import NursePatients from '@/components/nurse/NursePatients';
 import NurseNotifications from '@/components/nurse/NurseNotifications';
+import NursesList from '@/components/nurse/NursesList';
 
 const NurseDashboard = () => {
-  const { stats, nurse, handleLogout } = useNurseDashboard();
+  const { stats, nurses, currentNurse, handleLogout, updateNurseStatus, updateNurseAvailability } = useNurseDashboard();
+
+  if (!currentNurse) {
+    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -29,8 +35,12 @@ const NurseDashboard = () => {
             </button>
           </div>
           
-          <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <NurseInfoCard nurse={nurse} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <NurseProfileCard 
+              nurse={currentNurse} 
+              onStatusChange={updateNurseStatus}
+              onAvailabilityChange={updateNurseAvailability}
+            />
             <OperationsSummaryCard stats={stats} />
           </div>
           
@@ -44,6 +54,10 @@ const NurseDashboard = () => {
                 <User className="h-4 w-4" />
                 Meus Pacientes
               </TabsTrigger>
+              <TabsTrigger value="team" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Equipe
+              </TabsTrigger>
               <TabsTrigger value="notifications" className="flex items-center gap-2">
                 <BellRing className="h-4 w-4" />
                 Notificações
@@ -55,7 +69,11 @@ const NurseDashboard = () => {
             </TabsContent>
             
             <TabsContent value="patients">
-              <NursePatients />
+              <NursePatients nurse={currentNurse} />
+            </TabsContent>
+            
+            <TabsContent value="team">
+              <NursesList nurses={nurses} />
             </TabsContent>
             
             <TabsContent value="notifications">

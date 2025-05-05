@@ -9,7 +9,7 @@ export const useNurseActions = () => {
   const queryClient = useQueryClient();
 
   const autoAssignNurse = (currentNurses: Nurse[], currentQueue: TriageEntry[]) => {
-    const availableNurses = currentNurses.filter(n => n.available);
+    const availableNurses = currentNurses.filter(n => n.available && n.status === 'available');
     if (availableNurses.length === 0) return null;
     return availableNurses[0];
   };
@@ -29,7 +29,7 @@ export const useNurseActions = () => {
       if (!nurse) throw new Error("No available nurses");
       
       const updatedNurses = currentNurses.map(n => 
-        n.id === nurse!.id ? { ...n, available: false } : n
+        n.id === nurse!.id ? { ...n, available: false, status: 'busy' } : n
       );
       
       const updatedQueue = currentQueue.map(triage => 
@@ -44,6 +44,12 @@ export const useNurseActions = () => {
       
       localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       localStorage.setItem('nurses', JSON.stringify(updatedNurses));
+      
+      // Update current nurse if this was the currently logged in nurse
+      const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
+      if (currentNurse && currentNurse.id === nurse.id) {
+        localStorage.setItem('currentNurse', JSON.stringify({ ...currentNurse, available: false, status: 'busy' }));
+      }
       
       return { triageId, nurse };
     },
@@ -111,7 +117,7 @@ export const useNurseActions = () => {
       let updatedNurses = [...currentNurses];
       if (triage?.assignedNurse) {
         updatedNurses = currentNurses.map(n => 
-          n.id === triage.assignedNurse?.id ? { ...n, available: true } : n
+          n.id === triage.assignedNurse?.id ? { ...n, available: true, status: 'available' } : n
         );
       }
       
@@ -121,6 +127,12 @@ export const useNurseActions = () => {
       
       localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       localStorage.setItem('nurses', JSON.stringify(updatedNurses));
+      
+      // Update current nurse if this was the currently logged in nurse
+      const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
+      if (currentNurse && triage?.assignedNurse && currentNurse.id === triage.assignedNurse.id) {
+        localStorage.setItem('currentNurse', JSON.stringify({ ...currentNurse, available: true, status: 'available' }));
+      }
       
       return { triageId };
     },

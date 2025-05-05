@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
 import { useTriageQueue } from '@/hooks/useTriageQueue';
 import { TriageEntry } from '@/types/triage';
+import { Nurse, NurseStatus } from '@/types/nurse';
 
 export const useNurseDashboard = () => {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ export const useNurseDashboard = () => {
     completed: 0,
     critical: 0
   });
+
+  const [nurses, setNurses] = useState<Nurse[]>([]);
+  const [currentNurse, setCurrentNurse] = useState<Nurse | null>(null);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('staffLoggedIn') === 'true';
@@ -54,27 +58,21 @@ export const useNurseDashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
     queryClient.invalidateQueries({ queryKey: ['nurses'] });
     
-    // Initialize nurses if not already done
-    const nurses = localStorage.getItem('nurses');
-    if (!nurses) {
-      const initialNurses = [
-        { id: 1, name: "Ana Silva", available: true, room: "Triagem 1" },
-        { id: 2, name: "Carlos Oliveira", available: true, room: "Triagem 2" },
-        { id: 3, name: "Lucia Santos", available: true, room: "Triagem 3" }
-      ];
-      localStorage.setItem('nurses', JSON.stringify(initialNurses));
-    }
+    // Load nurses
+    const nursesData = JSON.parse(localStorage.getItem('nurses') || '[]');
+    setNurses(nursesData);
     
-    // Set current nurse if not already done
-    const currentNurse = localStorage.getItem('currentNurse');
-    if (!currentNurse) {
-      const nursesData = JSON.parse(localStorage.getItem('nurses') || '[]');
-      if (nursesData.length > 0) {
-        localStorage.setItem('currentNurse', JSON.stringify(nursesData[0]));
-      }
+    // Set current nurse
+    const currentNurseData = JSON.parse(localStorage.getItem('currentNurse') || 'null');
+    if (currentNurseData) {
+      setCurrentNurse(currentNurseData);
+    } else if (nursesData.length > 0) {
+      localStorage.setItem('currentNurse', JSON.stringify(nursesData[0]));
+      setCurrentNurse(nursesData[0]);
     }
   }, [navigate, queryClient, toast]);
 
+  // Update statistics when triageQueue changes
   useEffect(() => {
     if (triageQueue && triageQueue.length > 0) {
       const waitingCount = triageQueue.filter((t: TriageEntry) => t.status === 'waiting').length;
@@ -99,11 +97,56 @@ export const useNurseDashboard = () => {
     navigate('/staff-login');
   };
 
-  const nurse = JSON.parse(localStorage.getItem('currentNurse') || '{}');
+  const updateNurseStatus = (status: NurseStatus) => {
+    if (!currentNurse) return;
+    
+    const updatedNurse = { ...currentNurse, status };
+    
+    // Update in local state
+    setCurrentNurse(updatedNurse);
+    
+    // Update in localStorage
+    localStorage.setItem('currentNurse', JSON.stringify(updatedNurse));
+    
+    // Update in nurses list
+    const updatedNurses = nurses.map(nurse => 
+      nurse.id === currentNurse.id ? updatedNurse : nurse
+    );
+    setNurses(updatedNurses);
+    localStorage.setItem('nurses', JSON.stringify(updatedNurses));
+    
+    // Invalidate queries to trigger re-renders
+    queryClient.invalidateQueries({ queryKey: ['nurses'] });
+  };
+
+  const updateNurseAvailability = (available: boolean) => {
+    if (!currentNurse) return;
+    
+    const updatedNurse = { ...currentNurse, available };
+    
+    // Update in local state
+    setCurrentNurse(updatedNurse);
+    
+    // Update in localStorage
+    localStorage.setItem('currentNurse', JSON.stringify(updatedNurse));
+    
+    // Update in nurses list
+    const updatedNurses = nurses.map(nurse => 
+      nurse.id === currentNurse.id ? updatedNurse : nurse
+    );
+    setNurses(updatedNurses);
+    localStorage.setItem('nurses', JSON.stringify(updatedNurses));
+    
+    // Invalidate queries to trigger re-renders
+    queryClient.invalidateQueries({ queryKey: ['nurses'] });
+  };
 
   return {
     stats,
-    nurse,
-    handleLogout
+    nurses,
+    currentNurse,
+    handleLogout,
+    updateNurseStatus,
+    updateNurseAvailability
   };
 };
