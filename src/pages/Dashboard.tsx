@@ -7,8 +7,10 @@ import TriageHistory from '@/components/dashboard/TriageHistory';
 import TriageForm from '@/components/dashboard/TriageForm';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { FileText, User } from 'lucide-react';
+import { FileText, User, ClipboardList } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface Patient {
   id: number;
@@ -82,6 +84,15 @@ const Dashboard = () => {
         <DashboardHeader userName={user.name.split(' ')[0]} />
         
         <div className="container mx-auto px-4 py-6">
+          <div className="flex justify-end mb-6">
+            <Button asChild variant="outline" className="flex items-center gap-2 border-sabara-primary text-sabara-primary">
+              <Link to="/patient-history">
+                <ClipboardList className="h-4 w-4" />
+                Ver Histórico Completo
+              </Link>
+            </Button>
+          </div>
+          
           <div className="md:hidden mb-6">
             <Tabs defaultValue="triage">
               <TabsList className="w-full">

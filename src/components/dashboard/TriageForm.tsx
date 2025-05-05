@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Clock } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 interface TriageFormProps {
   onTriageSubmit: (triageData: any) => void;
@@ -20,6 +21,10 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [otherSymptoms, setOtherSymptoms] = useState('');
   const [showOtherInput, setShowOtherInput] = useState(false);
+  const [showVitalSigns, setShowVitalSigns] = useState(false);
+  const [temperature, setTemperature] = useState<string>('');
+  const [heartRate, setHeartRate] = useState<string>('');
+  const [preTriageNotes, setPreTriageNotes] = useState('');
   const { toast } = useToast();
 
   const toggleSymptom = (symptom: string) => {
@@ -43,13 +48,11 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-
     let allSymptoms = [...selectedSymptoms];
     if (showOtherInput && otherSymptoms.trim()) {
       allSymptoms = allSymptoms.filter(s => s !== "Outros");
       allSymptoms.push(`Outros: ${otherSymptoms.trim()}`);
     } else if (showOtherInput) {
-
       allSymptoms = allSymptoms.filter(s => s !== "Outros");
     }
 
@@ -61,7 +64,6 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       });
       return;
     }
-
 
     let priority = 'Baixo';
     if (allSymptoms.some(s => s.includes("Dificuldade respiratória")) || 
@@ -75,6 +77,10 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       priority = 'Moderado';
     }
 
+    // Parse temperature and heart rate
+    const parsedTemperature = temperature ? parseFloat(temperature) : undefined;
+    const parsedHeartRate = heartRate ? parseInt(heartRate) : undefined;
+
     const triageData = {
       date: new Date().toISOString(),
       symptoms: allSymptoms,
@@ -82,18 +88,28 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       id: Date.now(),
       recommendation: getRecommendation(priority),
       assignedDoctor: null,
+      assignedNurse: null,
       assignedRoom: null,
-      status: 'waiting', 
+      status: 'waiting',
+      measurements: {
+        temperature: parsedTemperature,
+        heartRate: parsedHeartRate
+      },
+      preTriageNotes: preTriageNotes.trim() || undefined
     };
 
     onTriageSubmit(triageData);
     setSelectedSymptoms([]);
     setOtherSymptoms('');
     setShowOtherInput(false);
+    setShowVitalSigns(false);
+    setTemperature('');
+    setHeartRate('');
+    setPreTriageNotes('');
     
     toast({
-      title: "Triagem enviada",
-      description: "Sua triagem foi registrada com sucesso",
+      title: "Pré-triagem enviada",
+      description: "Sua pré-triagem foi registrada com sucesso",
     });
   };
 
@@ -117,7 +133,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Nova Triagem
+          Nova Pré-Triagem via Celular
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -167,12 +183,69 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
             </div>
           )}
 
+          <div className="pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setShowVitalSigns(!showVitalSigns)}
+              className="mb-4 w-full"
+            >
+              {showVitalSigns ? "Ocultar Sinais Vitais" : "Informar Sinais Vitais (opcional)"}
+            </Button>
+            
+            {showVitalSigns && (
+              <div className="space-y-4 border p-4 rounded-md">
+                <div>
+                  <label htmlFor="temperature" className="block text-sm font-medium text-gray-700 mb-1">
+                    Temperatura (°C)
+                  </label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    step="0.1"
+                    placeholder="Ex: 37.5"
+                    value={temperature}
+                    onChange={(e) => setTemperature(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="heartRate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Batimentos Cardíacos (BPM)
+                  </label>
+                  <Input
+                    id="heartRate"
+                    type="number"
+                    placeholder="Ex: 80"
+                    value={heartRate}
+                    onChange={(e) => setHeartRate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="preTriageNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                    Observações adicionais
+                  </label>
+                  <Textarea
+                    id="preTriageNotes"
+                    placeholder="Descreva qualquer informação adicional relevante..."
+                    value={preTriageNotes}
+                    onChange={(e) => setPreTriageNotes(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <Button 
             type="submit"
             className="w-full"
             disabled={selectedSymptoms.length === 0 && !otherSymptoms}
           >
-            Enviar Triagem
+            Enviar Pré-Triagem
           </Button>
         </form>
       </CardContent>

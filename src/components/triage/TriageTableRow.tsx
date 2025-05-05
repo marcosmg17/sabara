@@ -2,37 +2,37 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
+import { Check, Stethoscope, SquarePen, HeartPulse } from 'lucide-react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { TriageEntry } from '@/types/triage';
-import { priorityColors } from '@/hooks/useTriageQueue';
+import { priorityColors, statusColors, statusLabels } from '@/hooks/useTriageQueue';
 
 interface TriageTableRowProps {
   triage: TriageEntry;
   onAssignDoctor: (triageId: number) => void;
+  onAssignNurse: (triageId: number) => void;
+  onMeasurementsClick: (triage: TriageEntry) => void;
+  onAssignUTI: (triageId: number) => void;
   onRemoveTriage: (triageId: number) => void;
   isMobile: boolean;
+  userRole: string;
 }
 
 const TriageTableRow: React.FC<TriageTableRowProps> = ({
   triage,
   onAssignDoctor,
+  onAssignNurse,
+  onMeasurementsClick,
+  onAssignUTI,
   onRemoveTriage,
-  isMobile
+  isMobile,
+  userRole
 }) => {
   return (
     <TableRow>
       <TableCell>
-        <Badge className={
-          triage.status === 'waiting' ? 'bg-blue-500' : 
-          triage.status === 'assigned' ? 'bg-purple-500' : 
-          triage.status === 'in-progress' ? 'bg-amber-500' : 
-          'bg-gray-500'
-        }>
-          {triage.status === 'waiting' ? 'Aguardando' : 
-           triage.status === 'assigned' ? 'Atribuído' : 
-           triage.status === 'in-progress' ? 'Em atendimento' : 
-           'Concluído'}
+        <Badge className={statusColors[triage.status]}>
+          {statusLabels[triage.status]}
         </Badge>
       </TableCell>
       <TableCell>
@@ -55,12 +55,37 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        {triage.assignedDoctor ? (
-          <div className="text-sm">
-            <div className="font-medium">{triage.assignedDoctor.name}</div>
-            <div className="text-gray-500">Sala {triage.assignedDoctor.room}</div>
+        {triage.status === 'waiting' && userRole === 'nurse' && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onAssignNurse(triage.id)}
+            className="w-full flex items-center gap-2"
+          >
+            <Stethoscope className="h-4 w-4" />
+            Realizar triagem física
+          </Button>
+        )}
+        {triage.status === 'nurse-triage' && userRole === 'nurse' && triage.assignedNurse && (
+          <div className="space-y-2">
+            <div className="text-sm">
+              <div className="font-medium">{triage.assignedNurse.name}</div>
+              {triage.assignedNurse.room && (
+                <div className="text-gray-500">Sala {triage.assignedNurse.room}</div>
+              )}
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onMeasurementsClick(triage)}
+              className="w-full flex items-center gap-2"
+            >
+              <HeartPulse className="h-4 w-4" />
+              {triage.measurements?.bloodPressure ? 'Editar medições' : 'Adicionar medições'}
+            </Button>
           </div>
-        ) : (
+        )}
+        {triage.status === 'waiting' && userRole !== 'nurse' && (
           <Button
             size="sm"
             variant="outline"
@@ -70,17 +95,37 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
             Atribuir ao próximo médico disponível
           </Button>
         )}
+        {(triage.status === 'assigned' || triage.status === 'in-progress') && triage.assignedDoctor && (
+          <div className="text-sm">
+            <div className="font-medium">{triage.assignedDoctor.name}</div>
+            <div className="text-gray-500">Sala {triage.assignedDoctor.room}</div>
+          </div>
+        )}
       </TableCell>
       <TableCell>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="flex items-center gap-2"
-          onClick={() => onRemoveTriage(triage.id)}
-        >
-          <Check className="h-4 w-4" />
-          Concluir
-        </Button>
+        <div className="flex flex-col gap-2">
+          {userRole === 'doctor' && (triage.status === 'assigned' || triage.status === 'in-progress') && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onAssignUTI(triage.id)}
+              className="flex items-center gap-2 text-red-500 border-red-500 hover:bg-red-50"
+            >
+              <SquarePen className="h-4 w-4" />
+              UTI
+            </Button>
+          )}
+          
+          <Button
+            size="sm"
+            variant="ghost"
+            className="flex items-center gap-2"
+            onClick={() => onRemoveTriage(triage.id)}
+          >
+            <Check className="h-4 w-4" />
+            Concluir
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );

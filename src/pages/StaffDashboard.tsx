@@ -13,12 +13,14 @@ import DoctorDashboard from '@/components/DoctorDashboard';
 import DoctorPatientHistory from '@/components/DoctorPatientHistory';
 import mockData from '@/data/mockData.json';
 import { useToast } from "@/hooks/use-toast";
+import { useInitializeData } from '@/hooks/useInitializeData';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const userRole = localStorage.getItem('userRole');
+  const userRole = localStorage.getItem('userRole') || 'staff';
+  useInitializeData();
 
   useEffect(() => {
     const isStaffLoggedIn = localStorage.getItem('staffLoggedIn') === 'true';
@@ -29,13 +31,21 @@ const StaffDashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
     queryClient.invalidateQueries({ queryKey: ['beds'] });
     queryClient.invalidateQueries({ queryKey: ['doctors'] });
+    queryClient.invalidateQueries({ queryKey: ['nurses'] });
     
     const existingUsers = localStorage.getItem('users');
     if (!existingUsers || JSON.parse(existingUsers).length === 0) {
       localStorage.setItem('users', JSON.stringify(mockData.patients));
       console.log('Initialized users from mock data:', mockData.patients);
     }
-  }, [navigate, queryClient]);
+
+    // Redirect to appropriate dashboard based on role
+    if (userRole === 'nurse') {
+      navigate('/nurse-dashboard');
+    } else if (userRole === 'admin') {
+      navigate('/admin-dashboard');
+    }
+  }, [navigate, queryClient, userRole]);
 
   const handleExamUpload = ({ userId, examName, file }: { userId: string; examName: string; file: File }) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -59,10 +69,8 @@ const StaffDashboard = () => {
       return user;
     });
     
-    
     localStorage.setItem('users', JSON.stringify(updatedUsers));
     
-   
     const currentUserStr = sessionStorage.getItem('currentUser');
     if (currentUserStr) {
       const currentUser = JSON.parse(currentUserStr);
@@ -83,79 +91,88 @@ const StaffDashboard = () => {
     });
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('staffLoggedIn');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('currentDoctor');
+    navigate('/staff-login');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow pt-16">
         <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-sabara-primary">
+              {userRole === 'doctor' ? 'Painel do Médico' : 'Painel de Funcionários'}
+            </h1>
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50"
+            >
+              Sair
+            </button>
+          </div>
+          
           {userRole === 'doctor' ? (
-            
-            <>
-              <h1 className="text-3xl font-bold text-sabara-primary mb-8">Painel do Médico</h1>
-              
-              <Tabs defaultValue="assignedPatients" className="space-y-6">
-                <TabsList>
-                  <TabsTrigger value="assignedPatients" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Pacientes Atribuídos
-                  </TabsTrigger>
-                  <TabsTrigger value="patientHistory" className="flex items-center gap-2">
-                    <ClipboardList className="h-4 w-4" />
-                    Histórico de Pacientes
-                  </TabsTrigger>
-                </TabsList>
+            <Tabs defaultValue="assignedPatients" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="assignedPatients" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Pacientes Atribuídos
+                </TabsTrigger>
+                <TabsTrigger value="patientHistory" className="flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4" />
+                  Histórico de Pacientes
+                </TabsTrigger>
+              </TabsList>
 
-                <TabsContent value="assignedPatients">
-                  <DoctorDashboard />
-                </TabsContent>
+              <TabsContent value="assignedPatients">
+                <DoctorDashboard />
+              </TabsContent>
 
-                <TabsContent value="patientHistory">
-                  <DoctorPatientHistory />
-                </TabsContent>
-              </Tabs>
-            </>
+              <TabsContent value="patientHistory">
+                <DoctorPatientHistory />
+              </TabsContent>
+            </Tabs>
           ) : (
-            
-            <>
-              <h1 className="text-3xl font-bold text-sabara-primary mb-8">Painel de Funcionários</h1>
-              
-              <Tabs defaultValue="triage" className="space-y-6">
-                <TabsList>
-                  <TabsTrigger value="triage" className="flex items-center gap-2">
-                    <ListCheck className="h-4 w-4" />
-                    Fila de Triagem
-                  </TabsTrigger>
-                  <TabsTrigger value="beds" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Gestão de Leitos
-                  </TabsTrigger>
-                  <TabsTrigger value="doctor" className="flex items-center gap-2">
-                    <UserRound className="h-4 w-4" />
-                    Painel de Médicos
-                  </TabsTrigger>
-                  <TabsTrigger value="exams" className="flex items-center gap-2">
-                    <File className="h-4 w-4" />
-                    Enviar Exames
-                  </TabsTrigger>
-                </TabsList>
+            <Tabs defaultValue="triage" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="triage" className="flex items-center gap-2">
+                  <ListCheck className="h-4 w-4" />
+                  Fila de Triagem
+                </TabsTrigger>
+                <TabsTrigger value="beds" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Gestão de Leitos
+                </TabsTrigger>
+                <TabsTrigger value="doctor" className="flex items-center gap-2">
+                  <UserRound className="h-4 w-4" />
+                  Painel de Médicos
+                </TabsTrigger>
+                <TabsTrigger value="exams" className="flex items-center gap-2">
+                  <File className="h-4 w-4" />
+                  Enviar Exames
+                </TabsTrigger>
+              </TabsList>
 
-                <TabsContent value="triage">
-                  <StaffTriageQueue />
-                </TabsContent>
+              <TabsContent value="triage">
+                <StaffTriageQueue />
+              </TabsContent>
 
-                <TabsContent value="beds">
-                  <StaffBedManagement />
-                </TabsContent>
+              <TabsContent value="beds">
+                <StaffBedManagement />
+              </TabsContent>
 
-                <TabsContent value="doctor">
-                  <DoctorDashboard />
-                </TabsContent>
+              <TabsContent value="doctor">
+                <DoctorDashboard />
+              </TabsContent>
 
-                <TabsContent value="exams">
-                  <ExamUpload onUpload={handleExamUpload} />
-                </TabsContent>
-              </Tabs>
-            </>
+              <TabsContent value="exams">
+                <ExamUpload onUpload={handleExamUpload} />
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </main>

@@ -1,26 +1,56 @@
-import React, { useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ListCheck } from 'lucide-react';
 import { useTriageQueue } from '@/hooks/useTriageQueue';
 import { useTriageActions } from '@/hooks/useTriageActions';
 import TriageTableRow from './triage/TriageTableRow';
+import MeasurementsDialog from './triage/MeasurementsDialog';
+import UTIDialog from './triage/UTIDialog';
+import { TriageEntry } from '@/types/triage';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const StaffTriageQueue = () => {
   const { triageQueue, isLoading } = useTriageQueue();
-  const { assignDoctor, removeTriage } = useTriageActions();
+  const { assignDoctor, assignNurse, updateTriageMeasurements, completeNurseTriage, assignToUTI, removeTriage } = useTriageActions();
   const isMobile = useIsMobile();
-
+  const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
+  const [isMeasurementsOpen, setIsMeasurementsOpen] = useState(false);
+  const [isUtiDialogOpen, setIsUtiDialogOpen] = useState(false);
+  const [selectedTriageId, setSelectedTriageId] = useState<number | null>(null);
+  const [userRole, setUserRole] = useState<string>('staff');
 
   useEffect(() => {
-    const waitingPatients = triageQueue.filter(triage => triage.status === 'waiting');
-    if (waitingPatients.length > 0) {
-      waitingPatients.forEach(patient => {
-        assignDoctor.mutate({ triageId: patient.id });
-      });
-    }
-  }, [triageQueue]);
+    const role = localStorage.getItem('userRole') || 'staff';
+    setUserRole(role);
+  }, []);
+
+  const handleMeasurementsClick = (triage: TriageEntry) => {
+    setSelectedTriage(triage);
+    setIsMeasurementsOpen(true);
+  };
+
+  const handleMeasurementsSave = (triageId: number, measurements: any, notes: string) => {
+    updateTriageMeasurements.mutate({ 
+      triageId, 
+      measurements,
+      notes
+    });
+  };
+
+  const handleCompleteNurseTriage = (triageId: number) => {
+    completeNurseTriage.mutate({ triageId });
+  };
+
+  const handleAssignUTI = (triageId: number) => {
+    setSelectedTriageId(triageId);
+    setIsUtiDialogOpen(true);
+  };
+
+  const handleUTIAssign = (triageId: number, bedId: string) => {
+    assignToUTI.mutate({ triageId, bedId });
+  };
 
   if (isLoading) {
     return <div>Carregando...</div>;
@@ -49,7 +79,7 @@ const StaffTriageQueue = () => {
                   </>
                 )}
                 <TableHead>Sintomas</TableHead>
-                <TableHead>Médico</TableHead>
+                <TableHead>Atendente</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -59,8 +89,12 @@ const StaffTriageQueue = () => {
                   key={triage.id}
                   triage={triage}
                   onAssignDoctor={(triageId) => assignDoctor.mutate({ triageId })}
+                  onAssignNurse={(triageId) => assignNurse.mutate({ triageId })}
+                  onMeasurementsClick={handleMeasurementsClick}
+                  onAssignUTI={handleAssignUTI}
                   onRemoveTriage={(triageId) => removeTriage.mutate(triageId)}
                   isMobile={isMobile}
+                  userRole={userRole}
                 />
               ))}
             </TableBody>
@@ -71,6 +105,21 @@ const StaffTriageQueue = () => {
             Não há pacientes na fila de triagem
           </div>
         )}
+        
+        <MeasurementsDialog
+          triage={selectedTriage}
+          open={isMeasurementsOpen}
+          onClose={() => setIsMeasurementsOpen(false)}
+          onSave={handleMeasurementsSave}
+          onComplete={handleCompleteNurseTriage}
+        />
+        
+        <UTIDialog
+          triageId={selectedTriageId}
+          open={isUtiDialogOpen}
+          onClose={() => setIsUtiDialogOpen(false)}
+          onAssign={handleUTIAssign}
+        />
       </CardContent>
     </Card>
   );

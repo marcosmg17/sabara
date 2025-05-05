@@ -3,19 +3,19 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, FileText } from 'lucide-react';
 import { TriageEntry } from '@/types/doctor';
 
 interface PatientListProps {
   assignedPatients: TriageEntry[];
   onStartConsultation: (triageId: number) => void;
-  onCompleteConsultation: (triageId: number) => void;
+  onPrescription: (triage: TriageEntry) => void;
 }
 
 const PatientList: React.FC<PatientListProps> = ({
   assignedPatients,
   onStartConsultation,
-  onCompleteConsultation,
+  onPrescription
 }) => {
   const priorityColors: Record<string, string> = {
     'Crítico': 'bg-red-500',
@@ -81,10 +81,10 @@ const PatientList: React.FC<PatientListProps> = ({
                   size="sm"
                   variant="outline"
                   className="flex items-center gap-2"
-                  onClick={() => onCompleteConsultation(triage.id)}
+                  onClick={() => onPrescription(triage)}
                 >
-                  <Check className="h-4 w-4" />
-                  Concluir
+                  <FileText className="h-4 w-4" />
+                  {triage.prescription ? "Editar Prescrição" : "Adicionar Prescrição"}
                 </Button>
               )}
             </TableCell>

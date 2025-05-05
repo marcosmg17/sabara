@@ -1,116 +1,145 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import mockData from '../data/mockData.json';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Hospital } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const StaffLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [role, setRole] = useState<string>('staff');
+  
   useEffect(() => {
-    const doctorsWithAuth = mockData.doctors.map((doctor: any) => ({
-      ...doctor,
-      email: `${doctor.name.toLowerCase().replace(/dr\.|dra\./g, '').trim().replace(/\s+/g, '.')}@sabarahealth.com`,
-      password: 'doctor123',
-      room: `${Math.floor(Math.random() * 5) + 1}0${Math.floor(Math.random() * 9) + 1}`,
-      available: true
-    }));
+    const isStaffLoggedIn = localStorage.getItem('staffLoggedIn') === 'true';
+    const userRole = localStorage.getItem('userRole');
     
-    localStorage.setItem('doctors', JSON.stringify(doctorsWithAuth));
-    console.log('Doctors initialized with auth credentials:', doctorsWithAuth);
-  }, []);
+    if (isStaffLoggedIn) {
+      switch (userRole) {
+        case 'doctor':
+          navigate('/staff-dashboard');
+          break;
+        case 'nurse':
+          navigate('/nurse-dashboard');
+          break;
+        case 'admin':
+          navigate('/admin-dashboard');
+          break;
+        default:
+          navigate('/staff-dashboard');
+      }
+    }
+  }, [navigate]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (email === 'staff@sabarahealth.com' && password === 'staff123') {
-      localStorage.setItem('staffLoggedIn', 'true');
-      localStorage.setItem('userRole', 'staff');
+    // Simple validation
+    if (!email || !password) {
       toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo à área de funcionários",
+        title: "Erro",
+        description: "Por favor, preencha todos os campos",
+        variant: "destructive"
       });
-      navigate('/staff-dashboard');
       return;
     }
     
-    const doctors = JSON.parse(localStorage.getItem('doctors') || '[]');
+    // For demo purposes, accept any login credentials
+    localStorage.setItem('staffLoggedIn', 'true');
+    localStorage.setItem('userRole', role);
     
-    console.log('Attempting doctor login with:', { email, password });
-    console.log('Available doctors:', doctors);
-    
-    const doctor = doctors.find((d: any) => 
-      d.email && d.email.toLowerCase() === email.toLowerCase() && 
-      d.password === password
-    );
-    
-    if (doctor) {
-      localStorage.setItem('staffLoggedIn', 'true');
-      localStorage.setItem('userRole', 'doctor');
-      localStorage.setItem('currentDoctor', JSON.stringify(doctor));
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo, Dr(a). " + doctor.name.split(' ')[0],
-      });
+    // Set up mock data for different roles
+    if (role === 'doctor') {
+      const doctors = JSON.parse(localStorage.getItem('doctors') || '[]');
+      if (doctors.length > 0) {
+        localStorage.setItem('currentDoctor', JSON.stringify(doctors[0]));
+      } else {
+        const defaultDoctor = { id: 1, name: "Dr. Roberto Almeida", available: true, room: "101", specialty: "Clínico Geral" };
+        localStorage.setItem('currentDoctor', JSON.stringify(defaultDoctor));
+        localStorage.setItem('doctors', JSON.stringify([defaultDoctor]));
+      }
       navigate('/staff-dashboard');
-      return;
+    } else if (role === 'nurse') {
+      navigate('/nurse-dashboard');
+    } else if (role === 'admin') {
+      navigate('/admin-dashboard');
+    } else {
+      navigate('/staff-dashboard');
     }
-
+    
     toast({
-      variant: "destructive",
-      title: "Erro no login",
-      description: "Credenciais inválidas",
+      title: "Login realizado",
+      description: "Você foi conectado com sucesso",
     });
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow pt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto">
-            <h1 className="text-2xl font-bold text-center mb-6">Área de Funcionários</h1>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-1">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium mb-1">
-                  Senha
-                </label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Entrar
-              </Button>
-            </form>
-            
-            
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center space-x-2">
+              <Hospital className="h-8 w-8 text-sabara-primary" />
+              <span className="text-2xl font-bold text-sabara-primary">Sabara Health</span>
+            </div>
           </div>
-        </div>
-      </main>
-      <Footer />
+          <CardTitle className="text-center text-2xl font-bold">Portal de Funcionários</CardTitle>
+          <CardDescription className="text-center">
+            Entre com suas credenciais para acessar o sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="role">Perfil</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione seu perfil" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="doctor">Médico</SelectItem>
+                  <SelectItem value="nurse">Enfermeiro</SelectItem>
+                  <SelectItem value="staff">Funcionário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="exemplo@sabara.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Senha</Label>
+                <a href="#" className="text-sm text-sabara-primary hover:underline">
+                  Esqueceu a senha?
+                </a>
+              </div>
+              <Input 
+                id="password" 
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full bg-sabara-primary hover:bg-sabara-primary/90">
+              Entrar
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
