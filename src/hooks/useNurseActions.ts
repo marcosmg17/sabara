@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Nurse, NurseStatus } from '@/types/nurse';
@@ -43,6 +44,7 @@ export const useNurseActions = () => {
           : triage
       );
       
+      // Save to localStorage
       localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       localStorage.setItem('nurses', JSON.stringify(updatedNurses));
       
@@ -77,6 +79,7 @@ export const useNurseActions = () => {
     }
   });
 
+  // Let's modify the MeasurementsDialog component check
   const updateTriageMeasurements = useMutation({
     mutationFn: async ({ 
       triageId, 

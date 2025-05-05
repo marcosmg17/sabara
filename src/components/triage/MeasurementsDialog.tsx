@@ -19,7 +19,8 @@ const MeasurementsDialog: React.FC<MeasurementsDialogProps> = (props) => {
   const isMobile = useIsMobile();
   
   // Check if nurse is assigned before showing dialog
-  if (open && triage && !triage.assignedNurse) {
+  // Make sure we check that the triage has a valid assignedNurse object with an id
+  if (open && triage && (!triage.assignedNurse || !triage.assignedNurse.id)) {
     return (
       <Alert variant="destructive">
         <Info className="h-4 w-4" />
