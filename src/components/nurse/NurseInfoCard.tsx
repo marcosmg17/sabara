@@ -2,8 +2,9 @@
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Stethoscope } from 'lucide-react';
+import { Stethoscope, User } from 'lucide-react';
 import { Nurse, NurseStatus } from '@/types/nurse';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 interface NurseInfoCardProps {
   nurse: Nurse;
@@ -40,9 +41,19 @@ const NurseInfoCard: React.FC<NurseInfoCardProps> = ({ nurse }) => {
       </CardHeader>
       <CardContent>
         <div className="flex items-center">
-          <div className="w-12 h-12 rounded-full bg-sabara-primary text-white flex items-center justify-center text-xl font-bold">
-            {nurse.name?.[0]}
-          </div>
+          {nurse.imageUrl ? (
+            <div className="w-12 h-12 rounded-full overflow-hidden">
+              <img 
+                src={nurse.imageUrl} 
+                alt={nurse.name} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-sabara-primary text-white flex items-center justify-center text-xl font-bold">
+              {nurse.name?.[0]}
+            </div>
+          )}
           <div className="ml-4">
             <h3 className="font-medium">{nurse.name}</h3>
             <p className="text-sm text-gray-600">
@@ -50,9 +61,24 @@ const NurseInfoCard: React.FC<NurseInfoCardProps> = ({ nurse }) => {
               {nurse.specialty && ` • ${nurse.specialty}`}
             </p>
             <div className="mt-1 flex gap-2">
-              <Badge className={getStatusColor(nurse.status || 'offline')}>
-                {getStatusLabel(nurse.status || 'offline')}
-              </Badge>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Badge className={`${getStatusColor(nurse.status || 'offline')} cursor-pointer`}>
+                    {getStatusLabel(nurse.status || 'offline')}
+                  </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Status do Enfermeiro</h4>
+                    <p className="text-sm text-gray-600">
+                      {nurse.status === 'busy' ? 
+                        'Este enfermeiro está atualmente realizando uma triagem.' : 
+                        getStatusLabel(nurse.status || 'offline')}
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
               <Badge className={nurse.available ? "bg-green-500" : "bg-red-500"}>
                 {nurse.available ? "Disponível para atendimento" : "Indisponível para atendimento"}
               </Badge>

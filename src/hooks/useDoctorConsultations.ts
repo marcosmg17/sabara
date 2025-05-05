@@ -11,6 +11,17 @@ export const useDoctorConsultations = () => {
   const startPatientConsultation = useMutation({
     mutationFn: async (triageId: number) => {
       const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
+      
+      // Only allow starting consultation if triage measurements are complete
+      const triage = currentQueue.find(t => t.id === triageId);
+      if (triage && (!triage.measurements?.temperature && 
+                     !triage.measurements?.heartRate && 
+                     !triage.measurements?.bloodPressure && 
+                     !triage.measurements?.oxygenSaturation && 
+                     !triage.measurements?.glucoseLevel)) {
+        throw new Error("Triage information not complete");
+      }
+      
       const updatedQueue = currentQueue.map(triage => 
         triage.id === triageId 
           ? { ...triage, status: 'in-progress' as const } 
@@ -24,6 +35,13 @@ export const useDoctorConsultations = () => {
       toast({
         title: "Consulta iniciada",
         description: "A consulta foi iniciada com sucesso"
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao iniciar consulta",
+        description: "Certifique-se de que a triagem de enfermagem foi realizada",
+        variant: "destructive"
       });
     }
   });

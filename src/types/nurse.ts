@@ -9,4 +9,5 @@ export interface Nurse {
   room?: string;
   specialty?: string;
   imageUrl?: string;
+  currentTriageId?: number;
 }

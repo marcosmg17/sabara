@@ -29,7 +29,7 @@ export const useNurseActions = () => {
       if (!nurse) throw new Error("No available nurses");
       
       const updatedNurses = currentNurses.map(n => 
-        n.id === nurse!.id ? { ...n, available: false, status: 'busy' } : n
+        n.id === nurse!.id ? { ...n, available: false, status: 'busy', currentTriageId: triageId } : n
       );
       
       const updatedQueue = currentQueue.map(triage => 
@@ -48,7 +48,12 @@ export const useNurseActions = () => {
       // Update current nurse if this was the currently logged in nurse
       const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
       if (currentNurse && currentNurse.id === nurse.id) {
-        localStorage.setItem('currentNurse', JSON.stringify({ ...currentNurse, available: false, status: 'busy' }));
+        localStorage.setItem('currentNurse', JSON.stringify({ 
+          ...currentNurse, 
+          available: false, 
+          status: 'busy',
+          currentTriageId: triageId 
+        }));
       }
       
       return { triageId, nurse };
@@ -117,7 +122,7 @@ export const useNurseActions = () => {
       let updatedNurses = [...currentNurses];
       if (triage?.assignedNurse) {
         updatedNurses = currentNurses.map(n => 
-          n.id === triage.assignedNurse?.id ? { ...n, available: true, status: 'available' } : n
+          n.id === triage.assignedNurse?.id ? { ...n, available: true, status: 'available', currentTriageId: undefined } : n
         );
       }
       
@@ -131,7 +136,12 @@ export const useNurseActions = () => {
       // Update current nurse if this was the currently logged in nurse
       const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
       if (currentNurse && triage?.assignedNurse && currentNurse.id === triage.assignedNurse.id) {
-        localStorage.setItem('currentNurse', JSON.stringify({ ...currentNurse, available: true, status: 'available' }));
+        localStorage.setItem('currentNurse', JSON.stringify({ 
+          ...currentNurse, 
+          available: true, 
+          status: 'available',
+          currentTriageId: undefined 
+        }));
       }
       
       return { triageId };

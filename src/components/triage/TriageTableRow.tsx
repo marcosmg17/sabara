@@ -2,7 +2,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Stethoscope, SquarePen, HeartPulse } from 'lucide-react';
+import { 
+  Check, Stethoscope, SquarePen, HeartPulse, 
+  FileText
+} from 'lucide-react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { TriageEntry } from '@/types/triage';
 import { priorityColors, statusColors, statusLabels } from '@/hooks/useTriageQueue';
@@ -28,6 +31,21 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
   isMobile,
   userRole
 }) => {
+  // Function to determine if measurements exist
+  const hasMeasurements = () => {
+    if (!triage.measurements) return false;
+    
+    return Boolean(
+      triage.measurements.temperature ||
+      triage.measurements.heartRate ||
+      triage.measurements.bloodPressure ||
+      triage.measurements.oxygenSaturation ||
+      triage.measurements.glucoseLevel
+    );
+  };
+
+  const hasNurseMeasured = hasMeasurements();
+  
   return (
     <TableRow>
       <TableCell>
@@ -80,8 +98,17 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
               onClick={() => onMeasurementsClick(triage)}
               className="w-full flex items-center gap-2"
             >
-              <HeartPulse className="h-4 w-4" />
-              {triage.measurements?.bloodPressure ? 'Editar medições' : 'Adicionar medições'}
+              {hasNurseMeasured ? (
+                <>
+                  <FileText className="h-4 w-4" />
+                  Editar triagem
+                </>
+              ) : (
+                <>
+                  <HeartPulse className="h-4 w-4" />
+                  Realizar triagem
+                </>
+              )}
             </Button>
           </div>
         )}
@@ -91,8 +118,11 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
             variant="outline"
             onClick={() => onAssignDoctor(triage.id)}
             className="w-full"
+            disabled={!hasNurseMeasured && triage.status === 'waiting'}
           >
-            Atribuir ao próximo médico disponível
+            {hasNurseMeasured ? 
+              "Atribuir ao próximo médico disponível" : 
+              "Aguardando triagem de enfermagem"}
           </Button>
         )}
         {(triage.status === 'assigned' || triage.status === 'in-progress') && triage.assignedDoctor && (
