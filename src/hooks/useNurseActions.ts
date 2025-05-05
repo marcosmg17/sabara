@@ -28,16 +28,18 @@ export const useNurseActions = () => {
       
       if (!nurse) throw new Error("No available nurses");
       
+      // Update nurse status
       const updatedNurses = currentNurses.map(n => 
-        n.id === nurse!.id ? { ...n, available: false, status: 'busy', currentTriageId: triageId } : n
+        n.id === nurse!.id ? { ...n, available: false, status: 'busy' as NurseStatus, currentTriageId: triageId } : n
       );
       
+      // Update triage entry with assigned nurse
       const updatedQueue = currentQueue.map(triage => 
         triage.id === triageId 
           ? { 
               ...triage, 
               assignedNurse: nurse, 
-              status: 'nurse-triage' 
+              status: 'nurse-triage' as const 
             } 
           : triage
       );

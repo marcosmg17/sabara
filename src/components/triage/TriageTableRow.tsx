@@ -84,12 +84,18 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
             Realizar triagem física
           </Button>
         )}
-        {triage.status === 'nurse-triage' && userRole === 'nurse' && triage.assignedNurse && (
+        {triage.status === 'nurse-triage' && userRole === 'nurse' && (
           <div className="space-y-2">
             <div className="text-sm">
-              <div className="font-medium">{triage.assignedNurse.name}</div>
-              {triage.assignedNurse.room && (
-                <div className="text-gray-500">Sala {triage.assignedNurse.room}</div>
+              {triage.assignedNurse ? (
+                <>
+                  <div className="font-medium">{triage.assignedNurse.name}</div>
+                  {triage.assignedNurse.room && (
+                    <div className="text-gray-500">Sala {triage.assignedNurse.room}</div>
+                  )}
+                </>
+              ) : (
+                <div className="text-amber-500 font-medium">Enfermeiro(a) não atribuído</div>
               )}
             </div>
             <Button
@@ -97,6 +103,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
               variant="outline"
               onClick={() => onMeasurementsClick(triage)}
               className="w-full flex items-center gap-2"
+              disabled={!triage.assignedNurse}
             >
               {hasNurseMeasured ? (
                 <>
