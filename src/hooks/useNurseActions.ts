@@ -1,7 +1,6 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { Nurse } from '@/types/nurse';
+import { Nurse, NurseStatus } from '@/types/nurse';
 import { TriageEntry, TriageMeasurements } from '@/types/triage';
 
 export const useNurseActions = () => {
