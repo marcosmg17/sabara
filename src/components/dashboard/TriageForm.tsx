@@ -5,17 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Clock } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
+import SymptomSelector from './triage/SymptomSelector';
+import VitalSignsForm from './triage/VitalSignsForm';
+import { symptoms, getRecommendation, calculatePriority } from './triage/TriageFormUtils';
 
 interface TriageFormProps {
   onTriageSubmit: (triageData: any) => void;
 }
-
-const symptoms = [
-  "Febre", "Dor de cabeça", "Tosse", "Dor de garganta",
-  "Dificuldade respiratória", "Náusea", "Dor abdominal", "Fadiga",
-  "Dor no peito", "Tontura", "Vômito", "Diarreia"
-];
 
 const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
@@ -65,17 +61,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       return;
     }
 
-    let priority = 'Baixo';
-    if (allSymptoms.some(s => s.includes("Dificuldade respiratória")) || 
-        allSymptoms.some(s => s.includes("Dor no peito"))) {
-      priority = 'Crítico';
-    } else if (allSymptoms.some(s => s.includes("Febre")) && 
-              (allSymptoms.some(s => s.includes("Tosse")) || 
-               allSymptoms.some(s => s.includes("Dificuldade respiratória")))) {
-      priority = 'Alto';
-    } else if (allSymptoms.length >= 3) {
-      priority = 'Moderado';
-    }
+    const priority = calculatePriority(allSymptoms);
 
     // Parse temperature and heart rate
     const parsedTemperature = temperature ? parseFloat(temperature) : undefined;
@@ -113,21 +99,6 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
     });
   };
 
-  const getRecommendation = (priority: string) => {
-    switch (priority) {
-      case 'Crítico':
-        return "Procure atendimento médico imediatamente.";
-      case 'Alto':
-        return "Recomendamos que você se dirija ao hospital assim que possível.";
-      case 'Moderado':
-        return "Aguarde o atendimento. Um profissional irá chamá-lo em breve.";
-      case 'Baixo':
-        return "Aguarde o atendimento conforme ordem de chegada.";
-      default:
-        return "Aguarde o atendimento.";
-    }
-  };
-
   return (
     <Card className="shadow-md">
       <CardHeader>
@@ -138,50 +109,15 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {symptoms.map((symptom) => (
-              <Button
-                key={symptom}
-                type="button"
-                variant={selectedSymptoms.includes(symptom) ? "default" : "outline"}
-                className={`${
-                  selectedSymptoms.includes(symptom) 
-                  ? 'bg-sabara-primary text-white' 
-                  : 'border-sabara-secondary text-gray-700'
-                } w-full justify-start`}
-                onClick={() => toggleSymptom(symptom)}
-              >
-                {symptom}
-              </Button>
-            ))}
-            <Button
-              type="button"
-              variant={selectedSymptoms.includes("Outros") ? "default" : "outline"}
-              className={`${
-                selectedSymptoms.includes("Outros") 
-                ? 'bg-sabara-primary text-white' 
-                : 'border-sabara-secondary text-gray-700'
-              } w-full justify-start`}
-              onClick={() => toggleSymptom("Outros")}
-            >
-              Outros
-            </Button>
-          </div>
-
-          {showOtherInput && (
-            <div className="mt-2">
-              <label htmlFor="otherSymptoms" className="block text-sm font-medium text-gray-700 mb-1">
-                Descreva outros sintomas
-              </label>
-              <Textarea
-                id="otherSymptoms"
-                placeholder="Descreva seus sintomas aqui..."
-                value={otherSymptoms}
-                onChange={(e) => setOtherSymptoms(e.target.value)}
-                className="w-full"
-              />
-            </div>
-          )}
+          <SymptomSelector 
+            symptoms={symptoms}
+            selectedSymptoms={selectedSymptoms}
+            toggleSymptom={toggleSymptom}
+            showOtherInput={showOtherInput}
+            otherSymptoms={otherSymptoms}
+            setOtherSymptoms={setOtherSymptoms}
+            Textarea={Textarea}
+          />
 
           <div className="pt-2">
             <Button 
@@ -194,49 +130,14 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
             </Button>
             
             {showVitalSigns && (
-              <div className="space-y-4 border p-4 rounded-md">
-                <div>
-                  <label htmlFor="temperature" className="block text-sm font-medium text-gray-700 mb-1">
-                    Temperatura (°C)
-                  </label>
-                  <Input
-                    id="temperature"
-                    type="number"
-                    step="0.1"
-                    placeholder="Ex: 37.5"
-                    value={temperature}
-                    onChange={(e) => setTemperature(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="heartRate" className="block text-sm font-medium text-gray-700 mb-1">
-                    Batimentos Cardíacos (BPM)
-                  </label>
-                  <Input
-                    id="heartRate"
-                    type="number"
-                    placeholder="Ex: 80"
-                    value={heartRate}
-                    onChange={(e) => setHeartRate(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="preTriageNotes" className="block text-sm font-medium text-gray-700 mb-1">
-                    Observações adicionais
-                  </label>
-                  <Textarea
-                    id="preTriageNotes"
-                    placeholder="Descreva qualquer informação adicional relevante..."
-                    value={preTriageNotes}
-                    onChange={(e) => setPreTriageNotes(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-              </div>
+              <VitalSignsForm 
+                temperature={temperature}
+                setTemperature={setTemperature}
+                heartRate={heartRate}
+                setHeartRate={setHeartRate}
+                preTriageNotes={preTriageNotes}
+                setPreTriageNotes={setPreTriageNotes}
+              />
             )}
           </div>
 
