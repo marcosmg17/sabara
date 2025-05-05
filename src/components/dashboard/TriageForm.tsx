@@ -76,12 +76,13 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
       assignedDoctor: null,
       assignedNurse: null,
       assignedRoom: null,
-      status: 'waiting',
+      status: 'waiting', // Always start with waiting for nurse triage
       measurements: {
         temperature: parsedTemperature,
         heartRate: parsedHeartRate
       },
-      preTriageNotes: preTriageNotes.trim() || undefined
+      preTriageNotes: preTriageNotes.trim() || undefined,
+      requiresNurseTriage: true // Flag to indicate that nurse triage is required
     };
 
     onTriageSubmit(triageData);
@@ -95,7 +96,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ onTriageSubmit }) => {
     
     toast({
       title: "Pré-triagem enviada",
-      description: "Sua pré-triagem foi registrada com sucesso",
+      description: "Sua pré-triagem foi registrada e encaminhada para avaliação de enfermagem",
     });
   };
 

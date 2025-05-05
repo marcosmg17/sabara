@@ -11,9 +11,11 @@ import UTIDialog from './triage/UTIDialog';
 import { TriageEntry } from '@/types/triage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 const StaffTriageQueue = () => {
   const { triageQueue, isLoading } = useTriageQueue();
+  const { toast } = useToast();
   const { assignDoctor, assignNurse, updateTriageMeasurements, completeNurseTriage, assignToUTI, removeTriage } = useTriageActions();
   const isMobile = useIsMobile();
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
@@ -61,6 +63,22 @@ const StaffTriageQueue = () => {
     });
   };
 
+  const handleAssignDoctor = (triageId: number) => {
+    // Check if nurse triage was completed
+    const triage = triageQueue.find(t => t.id === triageId);
+    
+    if (triage && !triage.measurements?.temperature && !triage.measurements?.heartRate) {
+      toast({
+        title: "Triagem de enfermagem necessária",
+        description: "Este paciente precisa passar pela triagem de enfermagem antes de ser atendido por um médico.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    assignDoctor.mutate({ triageId });
+  };
+
   const handleAssignUTI = (triageId: number) => {
     setSelectedTriageId(triageId);
     setIsUtiDialogOpen(true);
@@ -106,7 +124,7 @@ const StaffTriageQueue = () => {
                 <TriageTableRow
                   key={triage.id}
                   triage={triage}
-                  onAssignDoctor={(triageId) => assignDoctor.mutate({ triageId })}
+                  onAssignDoctor={handleAssignDoctor}
                   onAssignNurse={handleAssignNurse}
                   onMeasurementsClick={handleMeasurementsClick}
                   onAssignUTI={handleAssignUTI}
