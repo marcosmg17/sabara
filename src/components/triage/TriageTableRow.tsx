@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Check, Stethoscope, SquarePen, HeartPulse, 
-  FileText
+  FileText, AlertCircle
 } from 'lucide-react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { TriageEntry } from '@/types/triage';
@@ -142,17 +142,10 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
           </div>
         )}
         {triage.status === 'waiting' && userRole !== 'nurse' && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onAssignDoctor(triage.id)}
-            className="w-full"
-            disabled={!hasNurseMeasured && triage.status === 'waiting'}
-          >
-            {hasNurseMeasured ? 
-              "Atribuir ao próximo médico disponível" : 
-              "Aguardando triagem de enfermagem"}
-          </Button>
+          <div className="text-amber-500 flex items-center gap-1 text-sm">
+            <AlertCircle className="h-4 w-4" />
+            Aguardando triagem de enfermagem
+          </div>
         )}
         {(triage.status === 'assigned' || triage.status === 'in-progress') && triage.assignedDoctor && (
           <div className="text-sm">
@@ -163,6 +156,17 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-2">
+          {userRole === 'doctor' && hasNurseMeasured && triage.status === 'waiting' && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onAssignDoctor(triage.id)}
+              className="w-full"
+            >
+              Atender paciente
+            </Button>
+          )}
+          
           {userRole === 'doctor' && (triage.status === 'assigned' || triage.status === 'in-progress') && (
             <Button
               size="sm"
@@ -175,15 +179,17 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
             </Button>
           )}
           
-          <Button
-            size="sm"
-            variant="ghost"
-            className="flex items-center gap-2"
-            onClick={() => onRemoveTriage(triage.id)}
-          >
-            <Check className="h-4 w-4" />
-            Concluir
-          </Button>
+          {(userRole === 'doctor' || userRole === 'staff') && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="flex items-center gap-2"
+              onClick={() => onRemoveTriage(triage.id)}
+            >
+              <Check className="h-4 w-4" />
+              Concluir
+            </Button>
+          )}
         </div>
       </TableCell>
     </TableRow>

@@ -46,6 +46,11 @@ const StaffTriageQueue = () => {
   const handleCompleteNurseTriage = (triageId: number) => {
     completeNurseTriage.mutate({ triageId });
     setIsMeasurementsOpen(false);
+    
+    toast({
+      title: "Triagem de enfermagem concluída",
+      description: "O paciente está pronto para ser atendido pelo médico",
+    });
   };
 
   const handleAssignNurse = (triageId: number) => {
