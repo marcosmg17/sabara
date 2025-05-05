@@ -2,14 +2,14 @@
 import React from 'react';
 import { Doctor } from '@/types/doctor';
 import { Switch } from '@/components/ui/switch';
-import { useTriageActions } from '@/hooks/useTriageActions';
+import { useDoctorInfo } from '@/hooks/useDoctorInfo';
 
 interface DoctorInfoProps {
   doctor: Doctor;
 }
 
 const DoctorInfo: React.FC<DoctorInfoProps> = ({ doctor }) => {
-  const { toggleDoctorAvailability } = useTriageActions();
+  const { toggleDoctorAvailability } = useDoctorInfo();
 
   const handleAvailabilityChange = (checked: boolean) => {
     toggleDoctorAvailability.mutate({ doctorId: doctor.id, available: checked });
