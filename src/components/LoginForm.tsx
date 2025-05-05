@@ -32,19 +32,19 @@ const LoginForm: React.FC = () => {
       );
 
       if (user) {
-       
-        sessionStorage.setItem('currentUser', JSON.stringify(user));
+        // Especificamente marcar como tipo paciente
+        const userWithRole = { ...user, role: 'patient' };
         
+        // Salvar no sessionStorage
+        sessionStorage.setItem('currentUser', JSON.stringify(userWithRole));
         
         toast({
           title: "Login realizado com sucesso!",
           description: `Bem-vindo(a) de volta, ${user.name}!`,
         });
         
-       
         navigate('/dashboard');
       } else {
-        
         toast({
           variant: "destructive",
           title: "Erro ao fazer login",

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -10,10 +9,12 @@ import { Stethoscope, ListCheck, User, Activity, BellRing } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTriageQueue } from '@/hooks/useTriageQueue';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
 
 const NurseDashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { triageQueue } = useTriageQueue();
   const [stats, setStats] = useState({
     waiting: 0,
@@ -25,6 +26,22 @@ const NurseDashboard = () => {
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('staffLoggedIn') === 'true';
     const userRole = localStorage.getItem('userRole');
+    
+    // Verificar se o usuário é um paciente tentando acessar a área de enfermagem
+    const currentUserStr = sessionStorage.getItem('currentUser');
+    if (currentUserStr) {
+      const currentUser = JSON.parse(currentUserStr);
+      if (currentUser.role === 'patient') {
+        // Redirecionar pacientes para o dashboard de pacientes
+        toast({
+          variant: "destructive",
+          title: "Acesso negado",
+          description: "Você não tem permissão para acessar a área de enfermagem.",
+        });
+        navigate('/dashboard');
+        return;
+      }
+    }
     
     if (!isLoggedIn) {
       navigate('/staff-login');
@@ -60,7 +77,7 @@ const NurseDashboard = () => {
         localStorage.setItem('currentNurse', JSON.stringify(nursesData[0]));
       }
     }
-  }, [navigate, queryClient]);
+  }, [navigate, queryClient, toast]);
   
   useEffect(() => {
     if (triageQueue && triageQueue.length > 0) {
