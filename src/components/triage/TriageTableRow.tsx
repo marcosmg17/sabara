@@ -54,6 +54,16 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       onAssignNurse(triage.id);
     }
   };
+
+  // Handle nurse triage button click
+  const handleNurseTriageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (triage.status === 'waiting') {
+      onAssignNurse(triage.id);
+    } else if (triage.status === 'nurse-triage') {
+      onMeasurementsClick(triage);
+    }
+  };
   
   return (
     <TableRow 
@@ -89,7 +99,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onAssignNurse(triage.id)}
+            onClick={handleNurseTriageClick}
             className="w-full flex items-center gap-2"
           >
             <Stethoscope className="h-4 w-4" />
@@ -113,7 +123,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onMeasurementsClick(triage)}
+              onClick={handleNurseTriageClick}
               className="w-full flex items-center gap-2"
               disabled={!triage.assignedNurse}
             >

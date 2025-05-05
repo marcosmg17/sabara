@@ -1,7 +1,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { Nurse, NurseStatus } from '@/types/nurse';
+import { Nurse } from '@/types/nurse';
 import { TriageEntry, TriageMeasurements } from '@/types/triage';
 
 export const useNurseActions = () => {
@@ -30,7 +30,7 @@ export const useNurseActions = () => {
       
       // Update nurse status
       const updatedNurses = currentNurses.map(n => 
-        n.id === nurse!.id ? { ...n, available: false, status: 'busy' as NurseStatus, currentTriageId: triageId } : n
+        n.id === nurse!.id ? { ...n, available: false, status: 'busy', currentTriageId: triageId } : n
       );
       
       // Update triage entry with assigned nurse

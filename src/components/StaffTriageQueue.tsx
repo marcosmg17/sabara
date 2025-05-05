@@ -47,6 +47,10 @@ const StaffTriageQueue = () => {
   };
 
   const handleAssignNurse = (triageId: number) => {
+    // First, find the triage entry with this ID
+    const triage = triageQueue.find(t => t.id === triageId);
+    
+    // Start assigning a nurse
     assignNurse.mutate({ triageId }, {
       onSuccess: (data) => {
         if (data?.triage) {
