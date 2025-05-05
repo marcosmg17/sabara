@@ -10,6 +10,7 @@ import MeasurementsDialog from './triage/MeasurementsDialog';
 import UTIDialog from './triage/UTIDialog';
 import { TriageEntry } from '@/types/triage';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useQueryClient } from '@tanstack/react-query';
 
 const StaffTriageQueue = () => {
   const { triageQueue, isLoading } = useTriageQueue();
@@ -20,6 +21,7 @@ const StaffTriageQueue = () => {
   const [isUtiDialogOpen, setIsUtiDialogOpen] = useState(false);
   const [selectedTriageId, setSelectedTriageId] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<string>('staff');
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const role = localStorage.getItem('userRole') || 'staff';
@@ -41,6 +43,18 @@ const StaffTriageQueue = () => {
 
   const handleCompleteNurseTriage = (triageId: number) => {
     completeNurseTriage.mutate({ triageId });
+    setIsMeasurementsOpen(false);
+  };
+
+  const handleAssignNurse = (triageId: number) => {
+    assignNurse.mutate({ triageId }, {
+      onSuccess: (data) => {
+        if (data?.triage) {
+          setSelectedTriage(data.triage);
+          setIsMeasurementsOpen(true);
+        }
+      }
+    });
   };
 
   const handleAssignUTI = (triageId: number) => {
@@ -89,7 +103,7 @@ const StaffTriageQueue = () => {
                   key={triage.id}
                   triage={triage}
                   onAssignDoctor={(triageId) => assignDoctor.mutate({ triageId })}
-                  onAssignNurse={(triageId) => assignNurse.mutate({ triageId })}
+                  onAssignNurse={handleAssignNurse}
                   onMeasurementsClick={handleMeasurementsClick}
                   onAssignUTI={handleAssignUTI}
                   onRemoveTriage={(triageId) => removeTriage.mutate(triageId)}

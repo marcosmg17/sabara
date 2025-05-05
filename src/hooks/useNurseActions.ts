@@ -59,7 +59,9 @@ export const useNurseActions = () => {
         }));
       }
       
-      return { triageId, nurse };
+      // Automatically open measurements dialog by returning both triageId and updated triage
+      const updatedTriage = updatedQueue.find(t => t.id === triageId);
+      return { triageId, nurse, triage: updatedTriage };
     },
     onSuccess: ({ nurse }) => {
       queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
@@ -79,7 +81,6 @@ export const useNurseActions = () => {
     }
   });
 
-  // Let's modify the MeasurementsDialog component check
   const updateTriageMeasurements = useMutation({
     mutationFn: async ({ 
       triageId, 

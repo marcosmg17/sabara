@@ -46,8 +46,20 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
 
   const hasNurseMeasured = hasMeasurements();
   
+  // Handle row click to open measurements dialog
+  const handleRowClick = () => {
+    if (userRole === 'nurse' && triage.status === 'nurse-triage' && triage.assignedNurse) {
+      onMeasurementsClick(triage);
+    } else if (userRole === 'nurse' && triage.status === 'waiting') {
+      onAssignNurse(triage.id);
+    }
+  };
+  
   return (
-    <TableRow>
+    <TableRow 
+      className="cursor-pointer hover:bg-gray-50" 
+      onClick={handleRowClick}
+    >
       <TableCell>
         <Badge className={statusColors[triage.status]}>
           {statusLabels[triage.status]}
@@ -72,7 +84,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
           ))}
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         {triage.status === 'waiting' && userRole === 'nurse' && (
           <Button
             size="sm"
@@ -139,7 +151,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
           </div>
         )}
       </TableCell>
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-2">
           {userRole === 'doctor' && (triage.status === 'assigned' || triage.status === 'in-progress') && (
             <Button
