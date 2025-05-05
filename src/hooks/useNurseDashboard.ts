@@ -58,17 +58,31 @@ export const useNurseDashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
     queryClient.invalidateQueries({ queryKey: ['nurses'] });
     
-    // Load nurses
+    // Load nurses and set all to available
     const nursesData = JSON.parse(localStorage.getItem('nurses') || '[]');
-    setNurses(nursesData);
+    const availableNurses = nursesData.map((nurse: Nurse) => ({
+      ...nurse,
+      available: true,
+      status: 'available'
+    }));
+    
+    // Save updated nurses back to localStorage
+    localStorage.setItem('nurses', JSON.stringify(availableNurses));
+    setNurses(availableNurses);
     
     // Set current nurse
     const currentNurseData = JSON.parse(localStorage.getItem('currentNurse') || 'null');
     if (currentNurseData) {
-      setCurrentNurse(currentNurseData);
-    } else if (nursesData.length > 0) {
-      localStorage.setItem('currentNurse', JSON.stringify(nursesData[0]));
-      setCurrentNurse(nursesData[0]);
+      const updatedCurrentNurse = {
+        ...currentNurseData,
+        available: true,
+        status: 'available'
+      };
+      localStorage.setItem('currentNurse', JSON.stringify(updatedCurrentNurse));
+      setCurrentNurse(updatedCurrentNurse);
+    } else if (availableNurses.length > 0) {
+      localStorage.setItem('currentNurse', JSON.stringify(availableNurses[0]));
+      setCurrentNurse(availableNurses[0]);
     }
   }, [navigate, queryClient, toast]);
 

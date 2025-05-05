@@ -8,6 +8,7 @@ export const useNurseActions = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // New function to auto-assign a nurse
   const autoAssignNurse = (currentNurses: Nurse[], currentQueue: TriageEntry[]) => {
     const availableNurses = currentNurses.filter(n => n.available && n.status === 'available');
     if (availableNurses.length === 0) return null;
@@ -23,6 +24,7 @@ export const useNurseActions = () => {
       if (nurseId) {
         nurse = currentNurses.find(n => n.id === nurseId);
       } else {
+        // Auto-assign if no specific nurse is provided
         nurse = autoAssignNurse(currentNurses, currentQueue);
       }
       
