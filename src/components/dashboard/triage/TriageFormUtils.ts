@@ -21,16 +21,51 @@ export const getRecommendation = (priority: string) => {
 };
 
 export const calculatePriority = (symptoms: string[]) => {
-  let priority = 'Baixo';
-  if (symptoms.some(s => s.includes("Dificuldade respiratória")) || 
-      symptoms.some(s => s.includes("Dor no peito"))) {
-    priority = 'Crítico';
-  } else if (symptoms.some(s => s.includes("Febre")) && 
-            (symptoms.some(s => s.includes("Tosse")) || 
-             symptoms.some(s => s.includes("Dificuldade respiratória")))) {
-    priority = 'Alto';
-  } else if (symptoms.length >= 3) {
-    priority = 'Moderado';
+  // Sintomas críticos que requerem atenção imediata
+  const criticalSymptoms = [
+    "Dificuldade respiratória", 
+    "Dor no peito",
+    "Outros: Desmaio",
+    "Outros: Convulsão",
+    "Outros: Sangramento intenso"
+  ];
+  
+  // Sintomas de alta prioridade
+  const highPrioritySymptoms = [
+    "Febre",
+    "Vômito",
+    "Diarreia"
+  ];
+  
+  // Verifica sintomas críticos
+  if (symptoms.some(s => criticalSymptoms.some(cs => s.includes(cs)))) {
+    return 'Crítico';
+  } 
+  
+  // Verifica combinações de alta prioridade
+  const hasFever = symptoms.some(s => s.includes("Febre"));
+  const hasRespiratorySymptom = symptoms.some(s => 
+    s.includes("Tosse") || s.includes("Dor de garganta")
+  );
+  
+  if (hasFever && hasRespiratorySymptom) {
+    return 'Alto';
   }
-  return priority;
+  
+  // Verifica múltiplos sintomas de alta prioridade
+  const highPriorityCount = symptoms.filter(s => 
+    highPrioritySymptoms.some(hs => s.includes(hs))
+  ).length;
+  
+  if (highPriorityCount >= 2) {
+    return 'Alto';
+  } 
+  
+  // Verifica quantidade de sintomas para prioridade moderada
+  if (symptoms.length >= 3) {
+    return 'Moderado';
+  }
+  
+  // Caso contrário, prioridade baixa
+  return 'Baixo';
 };

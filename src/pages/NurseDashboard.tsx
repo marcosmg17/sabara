@@ -1,17 +1,26 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StaffTriageQueue from '@/components/StaffTriageQueue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Stethoscope, ListCheck, User } from 'lucide-react';
+import { Stethoscope, ListCheck, User, Activity, BellRing } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTriageQueue } from '@/hooks/useTriageQueue';
+import { Badge } from '@/components/ui/badge';
 
 const NurseDashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { triageQueue } = useTriageQueue();
+  const [stats, setStats] = useState({
+    waiting: 0,
+    inProgress: 0,
+    completed: 0,
+    critical: 0
+  });
   
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('staffLoggedIn') === 'true';
@@ -53,6 +62,22 @@ const NurseDashboard = () => {
     }
   }, [navigate, queryClient]);
   
+  useEffect(() => {
+    if (triageQueue && triageQueue.length > 0) {
+      const waitingCount = triageQueue.filter(t => t.status === 'waiting').length;
+      const inProgressCount = triageQueue.filter(t => t.status === 'nurse-triage' || t.status === 'assigned' || t.status === 'in-progress').length;
+      const completedCount = triageQueue.filter(t => t.status === 'completed').length;
+      const criticalCount = triageQueue.filter(t => t.priority === 'Crítico').length;
+      
+      setStats({
+        waiting: waitingCount,
+        inProgress: inProgressCount,
+        completed: completedCount,
+        critical: criticalCount
+      });
+    }
+  }, [triageQueue]);
+  
   const nurse = JSON.parse(localStorage.getItem('currentNurse') || '{}');
   
   const handleLogout = () => {
@@ -77,7 +102,7 @@ const NurseDashboard = () => {
             </button>
           </div>
           
-          <div className="mb-8">
+          <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -93,6 +118,36 @@ const NurseDashboard = () => {
                   <div className="ml-4">
                     <h3 className="font-medium">{nurse.name}</h3>
                     <p className="text-sm text-gray-600">{nurse.room && `Sala ${nurse.room}`}</p>
+                    <Badge className="mt-1 bg-green-500">{nurse.available ? 'Disponível' : 'Em atendimento'}</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Resumo de Operações
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-blue-100 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-700">{stats.waiting}</div>
+                    <div className="text-sm text-blue-700">Aguardando</div>
+                  </div>
+                  <div className="bg-yellow-100 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-700">{stats.inProgress}</div>
+                    <div className="text-sm text-yellow-700">Em Atendimento</div>
+                  </div>
+                  <div className="bg-green-100 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-700">{stats.completed}</div>
+                    <div className="text-sm text-green-700">Concluídos</div>
+                  </div>
+                  <div className="bg-red-100 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-red-700">{stats.critical}</div>
+                    <div className="text-sm text-red-700">Casos Críticos</div>
                   </div>
                 </div>
               </CardContent>
@@ -109,6 +164,10 @@ const NurseDashboard = () => {
                 <User className="h-4 w-4" />
                 Meus Pacientes
               </TabsTrigger>
+              <TabsTrigger value="notifications" className="flex items-center gap-2">
+                <BellRing className="h-4 w-4" />
+                Notificações
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="triage">
@@ -123,6 +182,26 @@ const NurseDashboard = () => {
                 <CardContent>
                   <div className="text-center py-8 text-gray-500">
                     Você não tem pacientes atribuídos no momento.
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="notifications">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notificações</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
+                      <div className="font-medium">Novo protocolo de triagem</div>
+                      <p className="text-sm text-gray-600">Um novo protocolo de triagem foi implementado. Por favor, revise as diretrizes atualizadas.</p>
+                    </div>
+                    <div className="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+                      <div className="font-medium">Alerta de ocupação</div>
+                      <p className="text-sm text-gray-600">A capacidade da sala de espera está em 80%. Favor agilizar o processo de triagem.</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
