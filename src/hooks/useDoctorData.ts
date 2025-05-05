@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { Doctor, TriageEntry } from '@/types/doctor';
+import { Doctor } from '@/types/doctor';
+import { TriageEntry } from '@/types/triage';
 import { useDoctorConsultations } from './useDoctorConsultations';
 
 export const useDoctorData = (selectedDoctorId: string) => {

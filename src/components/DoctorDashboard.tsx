@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRound } from 'lucide-react';
@@ -14,6 +13,7 @@ const DoctorDashboard: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const currentDoctor = JSON.parse(localStorage.getItem('currentDoctor') || '{}');
+  
   const selectedDoctorId = currentDoctor.id ? currentDoctor.id.toString() : '';
   
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);

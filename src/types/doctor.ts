@@ -1,4 +1,3 @@
-
 export interface Doctor {
   id: number;
   name: string;
@@ -7,16 +6,5 @@ export interface Doctor {
   available: boolean;
 }
 
-export interface TriageEntry {
-  id: number;
-  patientName: string;
-  patientAge: number;
-  patientGender: string;
-  patientId: number;
-  date: string;
-  symptoms: string[];
-  priority: string;
-  assignedDoctor: Doctor | null;
-  assignedRoom: string | null;
-  status: 'waiting' | 'assigned' | 'in-progress' | 'completed';
-}
+// Removing the duplicate TriageEntry definition as it's causing type conflicts
+// The application should use the main TriageEntry from triage.ts instead

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Check, FileText } from 'lucide-react';
-import { TriageEntry } from '@/types/doctor';
+import { TriageEntry } from '@/types/triage';
 
 interface PatientListProps {
   assignedPatients: TriageEntry[];

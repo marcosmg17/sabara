@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Doctor } from '@/types/doctor';
@@ -252,12 +251,35 @@ export const useTriageActions = () => {
     }
   });
 
+  const toggleDoctorAvailability = useMutation({
+    mutationFn: async ({ doctorId, available }: { doctorId: number, available: boolean }) => {
+      const currentDoctors = queryClient.getQueryData(['doctors']) as Doctor[] || [];
+      
+      const updatedDoctors = currentDoctors.map(doctor => 
+        doctor.id === doctorId ? { ...doctor, available } : doctor
+      );
+      
+      localStorage.setItem('doctors', JSON.stringify(updatedDoctors));
+      
+      return { doctorId, available };
+    },
+    onSuccess: ({ available }) => {
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      
+      toast({
+        title: `Status do médico atualizado`,
+        description: `Médico agora está ${available ? 'disponível' : 'indisponível'} para atendimento`,
+      });
+    }
+  });
+
   return {
     assignNurse,
     assignDoctor,
     updateTriageMeasurements,
     completeNurseTriage,
     assignToUTI,
-    removeTriage
+    removeTriage,
+    toggleDoctorAvailability
   };
 };
