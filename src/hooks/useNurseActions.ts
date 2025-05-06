@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Nurse } from '@/types/nurse';
@@ -166,7 +165,7 @@ export const useNurseActions = () => {
     }
   });
 
-  // New function to complete triage and send directly to a doctor
+  // Send to doctor function - updated to change status to 'assigned' directly
   const sendToDoctor = useMutation({
     mutationFn: async ({ 
       triageId, 
@@ -199,9 +198,11 @@ export const useNurseActions = () => {
       // Now complete the nurse triage, marking nurse as available
       const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
       const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]');
+      const currentDoctors = JSON.parse(localStorage.getItem('doctors') || '[]');
       
       const triage = currentQueue.find(t => t.id === triageId);
       
+      // Make nurse available again
       let updatedNurses = [...currentNurses];
       if (triage?.assignedNurse) {
         updatedNurses = currentNurses.map((n: Nurse) => 
@@ -209,13 +210,31 @@ export const useNurseActions = () => {
         );
       }
       
-      // Set triage status to waiting so a doctor can pick it up
+      // Find available doctor
+      const availableDoctors = currentDoctors.filter(d => d.available);
+      const doctor = availableDoctors.length > 0 ? availableDoctors[0] : null;
+      
+      // Set doctor as unavailable if one was found
+      let updatedDoctors = [...currentDoctors];
+      if (doctor) {
+        updatedDoctors = currentDoctors.map(d => 
+          d.id === doctor.id ? { ...d, available: false } : d
+        );
+      }
+      
+      // Set triage status to assigned if a doctor was found, or waiting if not
       const updatedQueue = currentQueue.map(t => 
-        t.id === triageId ? { ...t, status: 'waiting' } : t
+        t.id === triageId ? { 
+          ...t, 
+          status: doctor ? 'assigned' : 'waiting',
+          assignedDoctor: doctor || null,
+          assignedRoom: doctor ? doctor.room : null
+        } : t
       );
       
       localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       localStorage.setItem('nurses', JSON.stringify(updatedNurses));
+      localStorage.setItem('doctors', JSON.stringify(updatedDoctors));
       
       // Update current nurse if this was the currently logged in nurse
       const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
@@ -228,16 +247,24 @@ export const useNurseActions = () => {
         }));
       }
       
-      return { triageId };
+      return { triageId, doctor };
     },
-    onSuccess: () => {
+    onSuccess: ({ triageId, doctor }) => {
       queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
       queryClient.invalidateQueries({ queryKey: ['nurses'] });
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
       
-      toast({
-        title: "Enviado para médico",
-        description: "O paciente está pronto para atendimento médico",
-      });
+      if (doctor) {
+        toast({
+          title: "Enviado para médico",
+          description: `O paciente foi atribuído ao Dr(a). ${doctor.name} na sala ${doctor.room}`,
+        });
+      } else {
+        toast({
+          title: "Enviado para fila médica",
+          description: "O paciente está na fila de espera para atendimento médico",
+        });
+      }
     }
   });
 
@@ -245,6 +272,6 @@ export const useNurseActions = () => {
     assignNurse,
     updateTriageMeasurements,
     completeNurseTriage,
-    sendToDoctor // New function exposed
+    sendToDoctor
   };
 };

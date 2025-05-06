@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRound } from 'lucide-react';
 import { useDoctorData } from '@/hooks/useDoctorData';
@@ -26,6 +26,15 @@ const DoctorDashboard: React.FC = () => {
     startPatientConsultation,
     completePatientConsultation
   } = useDoctorData(selectedDoctorId);
+
+  // Add a polling effect to refresh the patient list periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
+    }, 5000); // Refresh every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [queryClient]);
 
   const handleStartConsultation = (triageId: number) => {
     startPatientConsultation.mutate(triageId);
