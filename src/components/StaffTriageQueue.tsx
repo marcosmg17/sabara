@@ -1,136 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ListCheck } from 'lucide-react';
-import { useTriageQueue } from '@/hooks/useTriageQueue';
-import { useTriageActions } from '@/hooks/useTriageActions';
-import TriageTableRow from './triage/TriageTableRow';
+
+import React, { useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
 import MeasurementsDialog from './triage/MeasurementsDialog';
 import UTIDialog from './triage/UTIDialog';
-import { TriageEntry } from '@/types/triage';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
+import TriageQueueHeader from './triage/TriageQueueHeader';
+import TriageQueueTable from './triage/TriageQueueTable';
+import { useTriageQueueHandlers } from '@/hooks/useTriageQueueHandlers';
+import { useTriageActions } from '@/hooks/useTriageActions';
 
 const StaffTriageQueue = () => {
-  const { triageQueue, isLoading } = useTriageQueue();
-  const { toast } = useToast();
-  const { 
-    assignDoctor, 
-    assignNurse, 
-    updateTriageMeasurements, 
-    completeNurseTriage, 
-    assignToUTI, 
-    removeTriage,
-    sendToDoctor 
-  } = useTriageActions();
+  const { removeTriage } = useTriageActions();
+  const {
+    triageQueue,
+    isLoading,
+    selectedTriage,
+    isMeasurementsOpen,
+    isUtiDialogOpen,
+    selectedTriageId,
+    userRole,
+    loadUserRole,
+    handleMeasurementsClick,
+    handleMeasurementsSave,
+    handleCompleteNurseTriage,
+    handleSendToDoctor,
+    handleAssignNurse,
+    handleAssignDoctor,
+    handleAssignUTI,
+    handleUTIAssign,
+    closeUTIDialog,
+    closeMeasurementsDialog
+  } = useTriageQueueHandlers();
+  
   const isMobile = useIsMobile();
-  const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
-  const [isMeasurementsOpen, setIsMeasurementsOpen] = useState(false);
-  const [isUtiDialogOpen, setIsUtiDialogOpen] = useState(false);
-  const [selectedTriageId, setSelectedTriageId] = useState<number | null>(null);
-  const [userRole, setUserRole] = useState<string>('staff');
-  const queryClient = useQueryClient();
 
   useEffect(() => {
-    const role = localStorage.getItem('userRole') || 'staff';
-    setUserRole(role);
-    console.log("Current user role:", role);
+    loadUserRole();
   }, []);
-
-  const handleMeasurementsClick = (triage: TriageEntry) => {
-    console.log("Opening measurements dialog for patient:", triage.patientName);
-    setSelectedTriage(triage);
-    setIsMeasurementsOpen(true);
-  };
-
-  const handleMeasurementsSave = (triageId: number, measurements: any, notes: string) => {
-    console.log("Saving measurements for triage ID:", triageId);
-    updateTriageMeasurements.mutate({ 
-      triageId, 
-      measurements,
-      notes
-    });
-  };
-
-  const handleCompleteNurseTriage = (triageId: number) => {
-    console.log("Completing nurse triage for ID:", triageId);
-    completeNurseTriage.mutate({ triageId });
-    setIsMeasurementsOpen(false);
-    
-    toast({
-      title: "Triagem de enfermagem concluída",
-      description: "O paciente está pronto para ser atendido pelo médico",
-    });
-  };
-  
-  const handleSendToDoctor = (triage: TriageEntry) => {
-    console.log("Sending patient to doctor:", triage.patientName);
-    
-    sendToDoctor.mutate({ 
-      triageId: triage.id
-    }, {
-      onSuccess: () => {
-        if (isMeasurementsOpen) {
-          setIsMeasurementsOpen(false);
-        }
-        
-        toast({
-          title: "Enviado para médico",
-          description: `O paciente ${triage.patientName} foi enviado para atendimento médico`,
-        });
-      }
-    });
-  };
-
-  const handleAssignNurse = (triageId: number) => {
-    console.log("Assigning nurse for triage ID:", triageId);
-    // Find the triage entry with this ID
-    const triage = triageQueue.find(t => t.id === triageId);
-    if (!triage) {
-      console.error("Triage not found with ID:", triageId);
-      return;
-    }
-    
-    // Start assigning a nurse
-    assignNurse.mutate({ triageId }, {
-      onSuccess: (data) => {
-        console.log("Successfully assigned nurse:", data);
-        if (data?.triage) {
-          setSelectedTriage(data.triage);
-          setIsMeasurementsOpen(true);
-        }
-      },
-      onError: (error) => {
-        console.error("Error assigning nurse:", error);
-      }
-    });
-  };
-
-  const handleAssignDoctor = (triageId: number) => {
-    // Check if nurse triage was completed
-    const triage = triageQueue.find(t => t.id === triageId);
-    
-    if (triage && !triage.measurements?.temperature && !triage.measurements?.heartRate) {
-      toast({
-        title: "Triagem de enfermagem necessária",
-        description: "Este paciente precisa passar pela triagem de enfermagem antes de ser atendido por um médico.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    assignDoctor.mutate({ triageId });
-  };
-
-  const handleAssignUTI = (triageId: number) => {
-    setSelectedTriageId(triageId);
-    setIsUtiDialogOpen(true);
-  };
-
-  const handleUTIAssign = (triageId: number, bedId: string) => {
-    assignToUTI.mutate({ triageId, bedId });
-  };
 
   if (isLoading) {
     return <div>Carregando...</div>;
@@ -138,59 +44,24 @@ const StaffTriageQueue = () => {
 
   return (
     <Card className="shadow-md">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-          <ListCheck className="h-5 w-5" />
-          Fila de Triagem
-        </CardTitle>
-      </CardHeader>
+      <TriageQueueHeader />
       <CardContent className="overflow-x-auto">
-        <div className="min-w-[800px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Status</TableHead>
-                <TableHead>Prioridade</TableHead>
-                <TableHead>Nome</TableHead>
-                {!isMobile && (
-                  <>
-                    <TableHead>Idade</TableHead>
-                    <TableHead>Sexo</TableHead>
-                  </>
-                )}
-                <TableHead>Sintomas</TableHead>
-                <TableHead>Atendente</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {triageQueue.map((triage) => (
-                <TriageTableRow
-                  key={triage.id}
-                  triage={triage}
-                  onAssignDoctor={handleAssignDoctor}
-                  onAssignNurse={handleAssignNurse}
-                  onMeasurementsClick={handleMeasurementsClick}
-                  onAssignUTI={handleAssignUTI}
-                  onRemoveTriage={(triageId) => removeTriage.mutate(triageId)}
-                  onSendToDoctor={userRole === 'nurse' ? handleSendToDoctor : undefined}
-                  isMobile={isMobile}
-                  userRole={userRole}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        {triageQueue.length === 0 && (
-          <div className="text-center py-4 text-gray-500">
-            Não há pacientes na fila de triagem
-          </div>
-        )}
+        <TriageQueueTable 
+          triageQueue={triageQueue}
+          onAssignDoctor={handleAssignDoctor}
+          onAssignNurse={handleAssignNurse}
+          onMeasurementsClick={handleMeasurementsClick}
+          onAssignUTI={handleAssignUTI}
+          onRemoveTriage={(triageId) => removeTriage.mutate(triageId)}
+          onSendToDoctor={handleSendToDoctor}
+          isMobile={isMobile}
+          userRole={userRole}
+        />
         
         <MeasurementsDialog
           triage={selectedTriage}
           open={isMeasurementsOpen}
-          onClose={() => setIsMeasurementsOpen(false)}
+          onClose={closeMeasurementsDialog}
           onSave={handleMeasurementsSave}
           onComplete={handleCompleteNurseTriage}
         />
@@ -198,7 +69,7 @@ const StaffTriageQueue = () => {
         <UTIDialog
           triageId={selectedTriageId}
           open={isUtiDialogOpen}
-          onClose={() => setIsUtiDialogOpen(false)}
+          onClose={closeUTIDialog}
           onAssign={handleUTIAssign}
         />
       </CardContent>
