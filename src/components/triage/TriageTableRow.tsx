@@ -58,6 +58,8 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
   // Handle nurse triage button click
   const handleNurseTriageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log("Nurse triage button clicked for patient:", triage.patientName);
+    
     if (triage.status === 'waiting') {
       onAssignNurse(triage.id);
     } else if (triage.status === 'nurse-triage') {

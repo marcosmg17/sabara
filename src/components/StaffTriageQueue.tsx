@@ -28,14 +28,17 @@ const StaffTriageQueue = () => {
   useEffect(() => {
     const role = localStorage.getItem('userRole') || 'staff';
     setUserRole(role);
+    console.log("Current user role:", role);
   }, []);
 
   const handleMeasurementsClick = (triage: TriageEntry) => {
+    console.log("Opening measurements dialog for patient:", triage.patientName);
     setSelectedTriage(triage);
     setIsMeasurementsOpen(true);
   };
 
   const handleMeasurementsSave = (triageId: number, measurements: any, notes: string) => {
+    console.log("Saving measurements for triage ID:", triageId);
     updateTriageMeasurements.mutate({ 
       triageId, 
       measurements,
@@ -44,6 +47,7 @@ const StaffTriageQueue = () => {
   };
 
   const handleCompleteNurseTriage = (triageId: number) => {
+    console.log("Completing nurse triage for ID:", triageId);
     completeNurseTriage.mutate({ triageId });
     setIsMeasurementsOpen(false);
     
@@ -54,16 +58,25 @@ const StaffTriageQueue = () => {
   };
 
   const handleAssignNurse = (triageId: number) => {
-    // First, find the triage entry with this ID
+    console.log("Assigning nurse for triage ID:", triageId);
+    // Find the triage entry with this ID
     const triage = triageQueue.find(t => t.id === triageId);
+    if (!triage) {
+      console.error("Triage not found with ID:", triageId);
+      return;
+    }
     
     // Start assigning a nurse
     assignNurse.mutate({ triageId }, {
       onSuccess: (data) => {
+        console.log("Successfully assigned nurse:", data);
         if (data?.triage) {
           setSelectedTriage(data.triage);
           setIsMeasurementsOpen(true);
         }
+      },
+      onError: (error) => {
+        console.error("Error assigning nurse:", error);
       }
     });
   };

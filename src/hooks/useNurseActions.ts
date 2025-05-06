@@ -8,7 +8,7 @@ export const useNurseActions = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // New function to auto-assign a nurse
+  // Function to auto-assign a nurse
   const autoAssignNurse = (currentNurses: Nurse[], currentQueue: TriageEntry[]) => {
     const availableNurses = currentNurses.filter(n => n.available && n.status === 'available');
     if (availableNurses.length === 0) return null;
@@ -18,11 +18,11 @@ export const useNurseActions = () => {
   const assignNurse = useMutation({
     mutationFn: async ({ triageId, nurseId }: { triageId: number, nurseId?: number }) => {
       const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      const currentNurses = queryClient.getQueryData(['nurses']) as Nurse[] || [];
+      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]');
       
       let nurse;
       if (nurseId) {
-        nurse = currentNurses.find(n => n.id === nurseId);
+        nurse = currentNurses.find((n: Nurse) => n.id === nurseId);
       } else {
         // Auto-assign if no specific nurse is provided
         nurse = autoAssignNurse(currentNurses, currentQueue);
@@ -30,8 +30,10 @@ export const useNurseActions = () => {
       
       if (!nurse) throw new Error("No available nurses");
       
+      console.log("Assigning nurse:", nurse.name, "to triage:", triageId);
+      
       // Update nurse status
-      const updatedNurses = currentNurses.map(n => 
+      const updatedNurses = currentNurses.map((n: Nurse) => 
         n.id === nurse!.id ? { ...n, available: false, status: 'busy', currentTriageId: triageId } : n
       );
       
@@ -122,13 +124,13 @@ export const useNurseActions = () => {
   const completeNurseTriage = useMutation({
     mutationFn: async ({ triageId }: { triageId: number }) => {
       const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      const currentNurses = queryClient.getQueryData(['nurses']) as Nurse[] || [];
+      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]');
       
       const triage = currentQueue.find(t => t.id === triageId);
       
       let updatedNurses = [...currentNurses];
       if (triage?.assignedNurse) {
-        updatedNurses = currentNurses.map(n => 
+        updatedNurses = currentNurses.map((n: Nurse) => 
           n.id === triage.assignedNurse?.id ? { ...n, available: true, status: 'available', currentTriageId: undefined } : n
         );
       }

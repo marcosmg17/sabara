@@ -60,11 +60,15 @@ export const useNurseDashboard = () => {
     
     // Load nurses and set all to available
     const nursesData = JSON.parse(localStorage.getItem('nurses') || '[]');
+    console.log("Retrieved nurses data:", nursesData);
+    
     const availableNurses = nursesData.map((nurse: Nurse) => ({
       ...nurse,
       available: true,
       status: 'available'
     }));
+    
+    console.log("Updated nurses to available:", availableNurses);
     
     // Save updated nurses back to localStorage
     localStorage.setItem('nurses', JSON.stringify(availableNurses));
@@ -80,9 +84,11 @@ export const useNurseDashboard = () => {
       };
       localStorage.setItem('currentNurse', JSON.stringify(updatedCurrentNurse));
       setCurrentNurse(updatedCurrentNurse);
+      console.log("Set current nurse:", updatedCurrentNurse);
     } else if (availableNurses.length > 0) {
       localStorage.setItem('currentNurse', JSON.stringify(availableNurses[0]));
       setCurrentNurse(availableNurses[0]);
+      console.log("Set default current nurse:", availableNurses[0]);
     }
   }, [navigate, queryClient, toast]);
 
@@ -114,6 +120,7 @@ export const useNurseDashboard = () => {
   const updateNurseStatus = (status: NurseStatus) => {
     if (!currentNurse) return;
     
+    console.log("Updating nurse status to:", status);
     const updatedNurse = { ...currentNurse, status };
     
     // Update in local state
@@ -136,6 +143,7 @@ export const useNurseDashboard = () => {
   const updateNurseAvailability = (available: boolean) => {
     if (!currentNurse) return;
     
+    console.log("Updating nurse availability to:", available);
     const updatedNurse = { ...currentNurse, available };
     
     // Update in local state
