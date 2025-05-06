@@ -104,6 +104,14 @@ const DoctorPatientHistory: React.FC = () => {
                             <div className="font-medium">{record.doctor}</div>
                             <div className="text-sm text-gray-600">{formatDate(record.date)}</div>
                           </div>
+                          
+                          {record.notes && (
+                            <div className="mb-3 bg-blue-50 p-3 rounded-md">
+                              <p className="font-medium text-blue-800 mb-1">Diagnóstico:</p>
+                              <p className="text-blue-700">{record.notes}</p>
+                            </div>
+                          )}
+                          
                           <div className="border-t pt-3 mt-2 whitespace-pre-wrap">
                             <p className="font-medium mb-2">Prescrição:</p>
                             <p>{record.prescription}</p>

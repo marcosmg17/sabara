@@ -109,6 +109,9 @@ const DoctorDashboard: React.FC = () => {
             }
             .diagnosis {
               margin-bottom: 20px;
+              background-color: #f0f7ff;
+              padding: 15px;
+              border-radius: 5px;
             }
             .prescription {
               border: 1px solid #ccc;
