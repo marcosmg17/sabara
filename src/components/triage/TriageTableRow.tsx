@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Check, Stethoscope, SquarePen, HeartPulse, 
-  FileText, AlertCircle, UserRound
+  FileText, AlertCircle, UserRound, ArrowRight
 } from 'lucide-react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { TriageEntry } from '@/types/triage';
@@ -151,7 +150,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
                 </>
               )}
             </Button>
-            {/* New Send to Doctor button for nurse */}
+            {/* Send to Doctor button for nurse when measurements exist */}
             {hasNurseMeasured && onSendToDoctor && (
               <Button
                 size="sm"
@@ -159,7 +158,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
                 onClick={handleSendToDoctorClick}
                 className="w-full flex items-center gap-2"
               >
-                <UserRound className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
                 Mandar para médico
               </Button>
             )}
@@ -180,6 +179,18 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-2">
+          {userRole === 'nurse' && triage.status === 'nurse-triage' && hasNurseMeasured && (
+            <Button
+              size="sm"
+              variant="default"
+              onClick={handleSendToDoctorClick}
+              className="w-full flex items-center gap-2"
+            >
+              <ArrowRight className="h-4 w-4" />
+              Mandar para médico
+            </Button>
+          )}
+          
           {userRole === 'doctor' && hasNurseMeasured && triage.status === 'waiting' && (
             <Button
               size="sm"

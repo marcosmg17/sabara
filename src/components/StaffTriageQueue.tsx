@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,7 +22,7 @@ const StaffTriageQueue = () => {
     completeNurseTriage, 
     assignToUTI, 
     removeTriage,
-    sendToDoctor  // Add the new function
+    sendToDoctor 
   } = useTriageActions();
   const isMobile = useIsMobile();
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
@@ -65,24 +64,23 @@ const StaffTriageQueue = () => {
     });
   };
   
-  // New handler for sending to doctor
   const handleSendToDoctor = (triage: TriageEntry) => {
     console.log("Sending patient to doctor:", triage.patientName);
     
-    // Get the latest measurements and notes from the selected triage
-    if (selectedTriage && selectedTriage.id === triage.id) {
-      sendToDoctor.mutate({ 
-        triageId: triage.id
-      }, {
-        onSuccess: () => {
+    sendToDoctor.mutate({ 
+      triageId: triage.id
+    }, {
+      onSuccess: () => {
+        if (isMeasurementsOpen) {
           setIsMeasurementsOpen(false);
         }
-      });
-    } else {
-      sendToDoctor.mutate({ 
-        triageId: triage.id
-      });
-    }
+        
+        toast({
+          title: "Enviado para médico",
+          description: `O paciente ${triage.patientName} foi enviado para atendimento médico`,
+        });
+      }
+    });
   };
 
   const handleAssignNurse = (triageId: number) => {
@@ -175,7 +173,7 @@ const StaffTriageQueue = () => {
                   onMeasurementsClick={handleMeasurementsClick}
                   onAssignUTI={handleAssignUTI}
                   onRemoveTriage={(triageId) => removeTriage.mutate(triageId)}
-                  onSendToDoctor={userRole === 'nurse' ? handleSendToDoctor : undefined}
+                  onSendToDoctor={handleSendToDoctor}
                   isMobile={isMobile}
                   userRole={userRole}
                 />
