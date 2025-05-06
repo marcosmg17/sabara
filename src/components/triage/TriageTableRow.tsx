@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,7 @@ interface TriageTableRowProps {
   onMeasurementsClick: (triage: TriageEntry) => void;
   onAssignUTI: (triageId: number) => void;
   onRemoveTriage: (triageId: number) => void;
-  onSendToDoctor?: (triage: TriageEntry) => void; // New prop for sending to doctor
+  onSendToDoctor?: (triage: TriageEntry) => void;
   isMobile: boolean;
   userRole: string;
 }
@@ -150,18 +151,6 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
                 </>
               )}
             </Button>
-            {/* Send to Doctor button for nurse when measurements exist */}
-            {hasNurseMeasured && onSendToDoctor && (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handleSendToDoctorClick}
-                className="w-full flex items-center gap-2"
-              >
-                <ArrowRight className="h-4 w-4" />
-                Mandar para médico
-              </Button>
-            )}
           </div>
         )}
         {triage.status === 'waiting' && userRole !== 'nurse' && (
@@ -179,7 +168,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-2">
-          {userRole === 'nurse' && triage.status === 'nurse-triage' && hasNurseMeasured && (
+          {userRole === 'nurse' && triage.status === 'nurse-triage' && hasNurseMeasured && onSendToDoctor && (
             <Button
               size="sm"
               variant="default"

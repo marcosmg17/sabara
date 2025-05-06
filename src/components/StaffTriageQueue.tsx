@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -173,7 +174,7 @@ const StaffTriageQueue = () => {
                   onMeasurementsClick={handleMeasurementsClick}
                   onAssignUTI={handleAssignUTI}
                   onRemoveTriage={(triageId) => removeTriage.mutate(triageId)}
-                  onSendToDoctor={handleSendToDoctor}
+                  onSendToDoctor={userRole === 'nurse' ? handleSendToDoctor : undefined}
                   isMobile={isMobile}
                   userRole={userRole}
                 />
