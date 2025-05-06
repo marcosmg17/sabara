@@ -22,16 +22,40 @@ const MeasurementsDialog: React.FC<MeasurementsDialogProps> = ({
   onSave,
   onComplete
 }) => {
-  const [measurements, setMeasurements] = useState<TriageMeasurements>({});
+  const [measurements, setMeasurements] = useState<{
+    temperature: string;
+    heartRate: string;
+    bloodPressure: string;
+    oxygenSaturation: string;
+    glucoseLevel: string;
+  }>({
+    temperature: '',
+    heartRate: '',
+    bloodPressure: '',
+    oxygenSaturation: '',
+    glucoseLevel: ''
+  });
   const [notes, setNotes] = useState<string>('');
   const [isCompleting, setIsCompleting] = useState(false);
 
   useEffect(() => {
     if (triage && open) {
-      setMeasurements(triage.measurements || {});
+      setMeasurements({
+        temperature: triage.measurements?.temperature?.toString() || '',
+        heartRate: triage.measurements?.heartRate?.toString() || '',
+        bloodPressure: triage.measurements?.bloodPressure || '',
+        oxygenSaturation: triage.measurements?.oxygenSaturation?.toString() || '',
+        glucoseLevel: triage.measurements?.glucoseLevel?.toString() || '',
+      });
       setNotes(triage.nurseNotes || '');
     } else {
-      setMeasurements({});
+      setMeasurements({
+        temperature: '',
+        heartRate: '',
+        bloodPressure: '',
+        oxygenSaturation: '',
+        glucoseLevel: ''
+      });
       setNotes('');
     }
     setIsCompleting(false);
@@ -39,7 +63,16 @@ const MeasurementsDialog: React.FC<MeasurementsDialogProps> = ({
 
   const handleSave = () => {
     if (triage) {
-      onSave(triage.id, measurements, notes);
+      // Convert string values to appropriate types for TriageMeasurements
+      const triageMeasurements: TriageMeasurements = {
+        temperature: measurements.temperature ? parseFloat(measurements.temperature) : undefined,
+        heartRate: measurements.heartRate ? parseInt(measurements.heartRate) : undefined,
+        bloodPressure: measurements.bloodPressure || undefined,
+        oxygenSaturation: measurements.oxygenSaturation ? parseInt(measurements.oxygenSaturation) : undefined,
+        glucoseLevel: measurements.glucoseLevel ? parseInt(measurements.glucoseLevel) : undefined
+      };
+      
+      onSave(triage.id, triageMeasurements, notes);
     }
   };
 
@@ -48,7 +81,15 @@ const MeasurementsDialog: React.FC<MeasurementsDialogProps> = ({
       setIsCompleting(true);
       
       // Primeiro salvamos as medições atualizadas
-      onSave(triage.id, measurements, notes);
+      const triageMeasurements: TriageMeasurements = {
+        temperature: measurements.temperature ? parseFloat(measurements.temperature) : undefined,
+        heartRate: measurements.heartRate ? parseInt(measurements.heartRate) : undefined,
+        bloodPressure: measurements.bloodPressure || undefined,
+        oxygenSaturation: measurements.oxygenSaturation ? parseInt(measurements.oxygenSaturation) : undefined,
+        glucoseLevel: measurements.glucoseLevel ? parseInt(measurements.glucoseLevel) : undefined
+      };
+      
+      onSave(triage.id, triageMeasurements, notes);
       
       // Depois concluímos a triagem e enviamos para o médico
       setTimeout(() => {
@@ -71,9 +112,11 @@ const MeasurementsDialog: React.FC<MeasurementsDialogProps> = ({
           
           <TriageMeasurementFields 
             measurements={measurements}
-            setMeasurements={setMeasurements}
+            onMeasurementChange={(field, value) => 
+              setMeasurements(prev => ({ ...prev, [field]: value }))
+            }
             notes={notes}
-            setNotes={setNotes}
+            onNotesChange={setNotes}
           />
           
           <TriageDialogFooter 

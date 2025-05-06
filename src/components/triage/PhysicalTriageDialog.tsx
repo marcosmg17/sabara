@@ -199,6 +199,11 @@ const PhysicalTriageDialog: React.FC<PhysicalTriageDialogProps> = ({
               onSave={handleSave}
               onComplete={handleComplete}
               saving={saving}
+              hasMeasurements={Boolean(
+                measurements.temperature ||
+                measurements.heartRate ||
+                measurements.bloodPressure
+              )}
             />
           </SheetFooter>
         </SheetContent>
@@ -219,6 +224,11 @@ const PhysicalTriageDialog: React.FC<PhysicalTriageDialogProps> = ({
             onSave={handleSave}
             onComplete={handleComplete}
             saving={saving}
+            hasMeasurements={Boolean(
+              measurements.temperature ||
+              measurements.heartRate ||
+              measurements.bloodPressure
+            )}
           />
         </DialogFooter>
       </DialogContent>
