@@ -13,9 +13,9 @@ interface PrescriptionDialogProps {
   triage: TriageEntry | null;
   open: boolean;
   onClose: () => void;
-  onSave: (triageId: number, diagnosis: string, prescription: string) => void;
+  onSave: (triageId: number, diagnosis: string, prescription: string, observation?: string) => void;
   onComplete: (triageId: number) => void;
-  onPrint?: (triageId: number, diagnosis: string, prescription: string) => void;
+  onPrint?: (triageId: number, diagnosis: string, prescription: string, observation?: string) => void;
 }
 
 const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
@@ -28,6 +28,7 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
 }) => {
   const [diagnosis, setDiagnosis] = useState<string>('');
   const [prescription, setPrescription] = useState<string>('');
+  const [observation, setObservation] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   const isMobile = useIsMobile();
 
@@ -35,19 +36,20 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
     if (triage) {
       setDiagnosis(triage.doctorDiagnosis || '');
       setPrescription(triage.prescription || '');
+      setObservation(triage.doctorObservation || '');
     }
   }, [triage]);
 
   const handleSave = () => {
     if (!triage) return;
     setSaving(true);
-    onSave(triage.id, diagnosis, prescription);
+    onSave(triage.id, diagnosis, prescription, observation);
     setSaving(false);
   };
 
   const handlePrint = () => {
     if (!triage || !onPrint) return;
-    onPrint(triage.id, diagnosis, prescription);
+    onPrint(triage.id, diagnosis, prescription, observation);
   };
 
   const handleComplete = () => {
@@ -125,7 +127,20 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
           placeholder="Insira a prescrição médica..."
           value={prescription}
           onChange={(e) => setPrescription(e.target.value)}
-          rows={8}
+          rows={6}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="observation" className="text-sm font-medium">
+          Observações
+        </label>
+        <Textarea
+          id="observation"
+          placeholder="Adicione observações adicionais..."
+          value={observation}
+          onChange={(e) => setObservation(e.target.value)}
+          rows={3}
         />
       </div>
     </div>

@@ -45,7 +45,7 @@ const DoctorDashboard: React.FC = () => {
     setIsPrescriptionOpen(true);
   };
 
-  const handleSavePrescription = (triageId: number, diagnosis: string, prescription: string) => {
+  const handleSavePrescription = (triageId: number, diagnosis: string, prescription: string, observation?: string) => {
     const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
     
     const updatedQueue = currentQueue.map(triage => 
@@ -53,7 +53,8 @@ const DoctorDashboard: React.FC = () => {
         ? { 
             ...triage,
             doctorDiagnosis: diagnosis,
-            prescription: prescription
+            prescription: prescription,
+            doctorObservation: observation
           } 
         : triage
     );
@@ -67,7 +68,7 @@ const DoctorDashboard: React.FC = () => {
     });
   };
 
-  const handlePrintPrescription = (triageId: number, diagnosis: string, prescription: string) => {
+  const handlePrintPrescription = (triageId: number, diagnosis: string, prescription: string, observation?: string) => {
     // Create a printable version of the prescription
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -115,6 +116,11 @@ const DoctorDashboard: React.FC = () => {
               margin-bottom: 20px;
               min-height: 200px;
             }
+            .observation {
+              border: 1px solid #ccc;
+              padding: 15px;
+              margin-bottom: 20px;
+            }
             .footer {
               margin-top: 50px;
               border-top: 1px solid #ccc;
@@ -154,6 +160,13 @@ const DoctorDashboard: React.FC = () => {
             <h2>Prescrição</h2>
             <p>${prescription.replace(/\n/g, '<br>') || 'Sem prescrição'}</p>
           </div>
+          
+          ${observation ? `
+          <div class="observation">
+            <h2>Observações</h2>
+            <p>${observation.replace(/\n/g, '<br>')}</p>
+          </div>
+          ` : ''}
           
           <div class="signature">
             ${doctor}<br>
@@ -197,6 +210,7 @@ const DoctorDashboard: React.FC = () => {
             doctor: currentDoctor.name,
             notes: triage.doctorDiagnosis || 'Consulta realizada',
             prescription: triage.prescription,
+            observation: triage.doctorObservation,
             measurements: triage.measurements
           });
           return { ...user, medicalHistory };

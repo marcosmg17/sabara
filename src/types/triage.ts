@@ -28,4 +28,5 @@ export interface TriageEntry {
   nurseNotes?: string;
   doctorDiagnosis?: string;
   prescription?: string;
+  doctorObservation?: string;
 }

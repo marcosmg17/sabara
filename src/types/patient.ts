@@ -4,6 +4,9 @@ export interface PatientMedicalRecord {
   date: string;
   doctor: string;
   notes: string;
+  prescription?: string;
+  observation?: string;
+  measurements?: any;
 }
 
 export interface Patient {
