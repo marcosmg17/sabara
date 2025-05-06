@@ -166,9 +166,85 @@ export const useNurseActions = () => {
     }
   });
 
+  // New function to complete triage and send directly to a doctor
+  const sendToDoctor = useMutation({
+    mutationFn: async ({ 
+      triageId, 
+      measurements, 
+      notes 
+    }: { 
+      triageId: number, 
+      measurements?: TriageMeasurements,
+      notes?: string 
+    }) => {
+      // First save any pending measurements if provided
+      if (measurements || notes) {
+        const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
+        const triage = currentQueue.find(t => t.id === triageId);
+        
+        if (triage) {
+          const updatedQueue = currentQueue.map(t => 
+            t.id === triageId ? { 
+              ...t, 
+              measurements: measurements ? { ...t.measurements, ...measurements } : t.measurements,
+              nurseNotes: notes || t.nurseNotes
+            } : t
+          );
+          
+          localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
+          queryClient.setQueryData(['triageQueue'], updatedQueue);
+        }
+      }
+      
+      // Now complete the nurse triage, marking nurse as available
+      const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
+      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]');
+      
+      const triage = currentQueue.find(t => t.id === triageId);
+      
+      let updatedNurses = [...currentNurses];
+      if (triage?.assignedNurse) {
+        updatedNurses = currentNurses.map((n: Nurse) => 
+          n.id === triage.assignedNurse?.id ? { ...n, available: true, status: 'available', currentTriageId: undefined } : n
+        );
+      }
+      
+      // Set triage status to waiting so a doctor can pick it up
+      const updatedQueue = currentQueue.map(t => 
+        t.id === triageId ? { ...t, status: 'waiting' } : t
+      );
+      
+      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
+      localStorage.setItem('nurses', JSON.stringify(updatedNurses));
+      
+      // Update current nurse if this was the currently logged in nurse
+      const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
+      if (currentNurse && triage?.assignedNurse && currentNurse.id === triage.assignedNurse.id) {
+        localStorage.setItem('currentNurse', JSON.stringify({ 
+          ...currentNurse, 
+          available: true, 
+          status: 'available',
+          currentTriageId: undefined 
+        }));
+      }
+      
+      return { triageId };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['nurses'] });
+      
+      toast({
+        title: "Enviado para médico",
+        description: "O paciente está pronto para atendimento médico",
+      });
+    }
+  });
+
   return {
     assignNurse,
     updateTriageMeasurements,
-    completeNurseTriage
+    completeNurseTriage,
+    sendToDoctor // New function exposed
   };
 };

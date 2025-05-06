@@ -13,6 +13,7 @@ export const useTriageActions = () => {
     assignNurse: nurseActions.assignNurse,
     updateTriageMeasurements: nurseActions.updateTriageMeasurements,
     completeNurseTriage: nurseActions.completeNurseTriage,
+    sendToDoctor: nurseActions.sendToDoctor, // Add the new sendToDoctor action
     
     // Doctor actions
     assignDoctor: doctorActions.assignDoctor,

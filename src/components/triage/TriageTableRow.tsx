@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Check, Stethoscope, SquarePen, HeartPulse, 
-  FileText, AlertCircle
+  FileText, AlertCircle, UserRound
 } from 'lucide-react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { TriageEntry } from '@/types/triage';
@@ -17,6 +17,7 @@ interface TriageTableRowProps {
   onMeasurementsClick: (triage: TriageEntry) => void;
   onAssignUTI: (triageId: number) => void;
   onRemoveTriage: (triageId: number) => void;
+  onSendToDoctor?: (triage: TriageEntry) => void; // New prop for sending to doctor
   isMobile: boolean;
   userRole: string;
 }
@@ -28,6 +29,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
   onMeasurementsClick,
   onAssignUTI,
   onRemoveTriage,
+  onSendToDoctor,
   isMobile,
   userRole
 }) => {
@@ -64,6 +66,14 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       onAssignNurse(triage.id);
     } else if (triage.status === 'nurse-triage') {
       onMeasurementsClick(triage);
+    }
+  };
+
+  // Handle send to doctor button click
+  const handleSendToDoctorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onSendToDoctor && triage.status === 'nurse-triage') {
+      onSendToDoctor(triage);
     }
   };
   
@@ -141,6 +151,18 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
                 </>
               )}
             </Button>
+            {/* New Send to Doctor button for nurse */}
+            {hasNurseMeasured && onSendToDoctor && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleSendToDoctorClick}
+                className="w-full flex items-center gap-2"
+              >
+                <UserRound className="h-4 w-4" />
+                Mandar para médico
+              </Button>
+            )}
           </div>
         )}
         {triage.status === 'waiting' && userRole !== 'nurse' && (

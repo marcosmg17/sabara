@@ -16,7 +16,15 @@ import { useToast } from '@/hooks/use-toast';
 const StaffTriageQueue = () => {
   const { triageQueue, isLoading } = useTriageQueue();
   const { toast } = useToast();
-  const { assignDoctor, assignNurse, updateTriageMeasurements, completeNurseTriage, assignToUTI, removeTriage } = useTriageActions();
+  const { 
+    assignDoctor, 
+    assignNurse, 
+    updateTriageMeasurements, 
+    completeNurseTriage, 
+    assignToUTI, 
+    removeTriage,
+    sendToDoctor  // Add the new function
+  } = useTriageActions();
   const isMobile = useIsMobile();
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
   const [isMeasurementsOpen, setIsMeasurementsOpen] = useState(false);
@@ -55,6 +63,26 @@ const StaffTriageQueue = () => {
       title: "Triagem de enfermagem concluída",
       description: "O paciente está pronto para ser atendido pelo médico",
     });
+  };
+  
+  // New handler for sending to doctor
+  const handleSendToDoctor = (triage: TriageEntry) => {
+    console.log("Sending patient to doctor:", triage.patientName);
+    
+    // Get the latest measurements and notes from the selected triage
+    if (selectedTriage && selectedTriage.id === triage.id) {
+      sendToDoctor.mutate({ 
+        triageId: triage.id
+      }, {
+        onSuccess: () => {
+          setIsMeasurementsOpen(false);
+        }
+      });
+    } else {
+      sendToDoctor.mutate({ 
+        triageId: triage.id
+      });
+    }
   };
 
   const handleAssignNurse = (triageId: number) => {
@@ -147,6 +175,7 @@ const StaffTriageQueue = () => {
                   onMeasurementsClick={handleMeasurementsClick}
                   onAssignUTI={handleAssignUTI}
                   onRemoveTriage={(triageId) => removeTriage.mutate(triageId)}
+                  onSendToDoctor={userRole === 'nurse' ? handleSendToDoctor : undefined}
                   isMobile={isMobile}
                   userRole={userRole}
                 />
