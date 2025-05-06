@@ -27,11 +27,11 @@ const DoctorDashboard: React.FC = () => {
     completePatientConsultation
   } = useDoctorData(selectedDoctorId);
 
-  // Add a polling effect to refresh the patient list periodically
+  // Aumentamos a frequência do polling para 3 segundos para atualizar mais rapidamente a lista de pacientes
   useEffect(() => {
     const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
-    }, 5000); // Refresh every 5 seconds
+    }, 3000); // Atualiza a cada 3 segundos
     
     return () => clearInterval(interval);
   }, [queryClient]);

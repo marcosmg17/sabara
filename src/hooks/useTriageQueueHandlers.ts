@@ -1,10 +1,8 @@
-
 import { useState } from 'react';
 import { useTriageQueue } from '@/hooks/useTriageQueue';
 import { useTriageActions } from '@/hooks/useTriageActions';
 import { TriageEntry } from '@/types/triage';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
 
 export const useTriageQueueHandlers = () => {
   const { triageQueue, isLoading } = useTriageQueue();
@@ -18,7 +16,6 @@ export const useTriageQueueHandlers = () => {
     removeTriage,
     sendToDoctor 
   } = useTriageActions();
-  const queryClient = useQueryClient();
   
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
   const [isMeasurementsOpen, setIsMeasurementsOpen] = useState(false);
@@ -50,12 +47,14 @@ export const useTriageQueueHandlers = () => {
 
   const handleCompleteNurseTriage = (triageId: number) => {
     console.log("Completing nurse triage for ID:", triageId);
-    completeNurseTriage.mutate({ triageId });
+    
+    // Usando sendToDoctor ao invés de completeNurseTriage
+    sendToDoctor.mutate({ triageId });
     setIsMeasurementsOpen(false);
     
     toast({
       title: "Triagem de enfermagem concluída",
-      description: "O paciente está pronto para ser atendido pelo médico",
+      description: "O paciente foi encaminhado para atendimento médico",
     });
   };
   
@@ -69,11 +68,6 @@ export const useTriageQueueHandlers = () => {
         if (isMeasurementsOpen) {
           setIsMeasurementsOpen(false);
         }
-        
-        toast({
-          title: "Enviado para médico",
-          description: `O paciente ${triage.patientName} foi enviado para atendimento médico`,
-        });
       }
     });
   };

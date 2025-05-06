@@ -1,44 +1,50 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Save } from 'lucide-react';
+import { Save, ArrowRight, Loader2 } from 'lucide-react';
 
 interface TriageDialogFooterProps {
-  onCancel: () => void;
   onSave: () => void;
-  onComplete: () => void;
-  saving: boolean;
+  onComplete?: () => void;
+  hasMeasurements: boolean;
+  isCompleting?: boolean;
+  completeBtnText?: string;
 }
 
 const TriageDialogFooter: React.FC<TriageDialogFooterProps> = ({
-  onCancel,
   onSave,
   onComplete,
-  saving
+  hasMeasurements,
+  isCompleting = false,
+  completeBtnText = "Concluir Triagem"
 }) => {
   return (
-    <div className="flex justify-between w-full">
-      <Button variant="outline" onClick={onCancel}>
-        Cancelar
+    <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onSave}
+        className="order-1 sm:order-none"
+      >
+        <Save className="mr-2 h-4 w-4" />
+        Salvar
       </Button>
-      <div className="flex gap-2">
-        <Button 
-          variant="outline"
-          onClick={onSave}
-          disabled={saving}
-          className="flex items-center gap-2"
+      
+      {onComplete && (
+        <Button
+          type="button"
+          onClick={onComplete}
+          disabled={!hasMeasurements || isCompleting}
+          className="bg-green-600 hover:bg-green-700"
         >
-          <Save className="h-4 w-4" />
-          Salvar
+          {isCompleting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <ArrowRight className="mr-2 h-4 w-4" />
+          )}
+          {completeBtnText}
         </Button>
-        <Button 
-          onClick={onComplete} 
-          className="flex items-center gap-2"
-        >
-          <Check className="h-4 w-4" />
-          Concluir Triagem
-        </Button>
-      </div>
+      )}
     </div>
   );
 };

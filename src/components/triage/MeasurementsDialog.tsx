@@ -1,10 +1,11 @@
 
-import React from 'react';
-import PhysicalTriageDialog from './PhysicalTriageDialog';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { TriageEntry, TriageMeasurements } from '@/types/triage';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import TriagePatientInfo from './TriagePatientInfo';
+import TriageMeasurementFields from './TriageMeasurementFields';
+import TriageDialogFooter from './TriageDialogFooter';
 
 interface MeasurementsDialogProps {
   triage: TriageEntry | null;
@@ -14,29 +15,84 @@ interface MeasurementsDialogProps {
   onComplete: (triageId: number) => void;
 }
 
-const MeasurementsDialog: React.FC<MeasurementsDialogProps> = (props) => {
-  const { triage, open } = props;
-  const isMobile = useIsMobile();
-  
-  // Check if nurse is assigned before showing dialog
-  // Make sure we check that the triage has a valid assignedNurse object with an id
-  if (open && triage && (!triage.assignedNurse || !triage.assignedNurse.id)) {
-    return (
-      <Alert variant="destructive">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Enfermeiro não atribuído</AlertTitle>
-        <AlertDescription>
-          Não há enfermeiro atribuído a esta triagem. Por favor, atribua um enfermeiro primeiro.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  
+const MeasurementsDialog: React.FC<MeasurementsDialogProps> = ({
+  triage,
+  open,
+  onClose,
+  onSave,
+  onComplete
+}) => {
+  const [measurements, setMeasurements] = useState<TriageMeasurements>({});
+  const [notes, setNotes] = useState<string>('');
+  const [isCompleting, setIsCompleting] = useState(false);
+
+  useEffect(() => {
+    if (triage && open) {
+      setMeasurements(triage.measurements || {});
+      setNotes(triage.nurseNotes || '');
+    } else {
+      setMeasurements({});
+      setNotes('');
+    }
+    setIsCompleting(false);
+  }, [triage, open]);
+
+  const handleSave = () => {
+    if (triage) {
+      onSave(triage.id, measurements, notes);
+    }
+  };
+
+  const handleComplete = () => {
+    if (triage) {
+      setIsCompleting(true);
+      
+      // Primeiro salvamos as medições atualizadas
+      onSave(triage.id, measurements, notes);
+      
+      // Depois concluímos a triagem e enviamos para o médico
+      setTimeout(() => {
+        onComplete(triage.id);
+      }, 300);
+    }
+  };
+
+  if (!triage) return null;
+
   return (
-    <PhysicalTriageDialog 
-      {...props}
-      isMobile={isMobile}
-    />
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Triagem de Enfermagem</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6 py-4">
+          <TriagePatientInfo triage={triage} />
+          
+          <TriageMeasurementFields 
+            measurements={measurements}
+            setMeasurements={setMeasurements}
+            notes={notes}
+            setNotes={setNotes}
+          />
+          
+          <TriageDialogFooter 
+            onSave={handleSave}
+            onComplete={handleComplete}
+            hasMeasurements={
+              Boolean(
+                measurements.temperature || 
+                measurements.heartRate || 
+                measurements.bloodPressure || 
+                measurements.oxygenSaturation
+              )
+            }
+            isCompleting={isCompleting}
+            completeBtnText="Concluir e Enviar para Médico"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
