@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -132,25 +131,39 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
                 <div className="text-amber-500 font-medium">Enfermeiro(a) não atribuído</div>
               )}
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleNurseTriageClick}
-              className="w-full flex items-center gap-2"
-              disabled={!triage.assignedNurse}
-            >
-              {hasNurseMeasured ? (
-                <>
-                  <FileText className="h-4 w-4" />
-                  Editar triagem
-                </>
-              ) : (
-                <>
-                  <HeartPulse className="h-4 w-4" />
-                  Realizar triagem
-                </>
+            <div className="flex flex-col gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleNurseTriageClick}
+                className="w-full flex items-center gap-2"
+                disabled={!triage.assignedNurse}
+              >
+                {hasNurseMeasured ? (
+                  <>
+                    <FileText className="h-4 w-4" />
+                    Editar triagem
+                  </>
+                ) : (
+                  <>
+                    <HeartPulse className="h-4 w-4" />
+                    Realizar triagem
+                  </>
+                )}
+              </Button>
+              
+              {hasNurseMeasured && onSendToDoctor && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleSendToDoctorClick}
+                  className="w-full flex items-center gap-2"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  Encaminhar para atendimento
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
         )}
         {triage.status === 'waiting' && userRole !== 'nurse' && (
@@ -168,18 +181,6 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-2">
-          {userRole === 'nurse' && triage.status === 'nurse-triage' && hasNurseMeasured && onSendToDoctor && (
-            <Button
-              size="sm"
-              variant="default"
-              onClick={handleSendToDoctorClick}
-              className="w-full flex items-center gap-2"
-            >
-              <ArrowRight className="h-4 w-4" />
-              Mandar para médico
-            </Button>
-          )}
-          
           {userRole === 'doctor' && hasNurseMeasured && triage.status === 'waiting' && (
             <Button
               size="sm"
