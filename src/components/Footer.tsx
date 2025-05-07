@@ -64,12 +64,6 @@ const Footer: React.FC = () => {
               <li>
                 <Link to="/servicos/comunicacao" className="hover:underline">Comunicação Digital</Link>
               </li>
-              <li>
-                <Link to="/servicos/consultas" className="hover:underline">Consultas Especializadas</Link>
-              </li>
-              <li>
-                <Link to="/servicos/exames" className="hover:underline">Exames Laboratoriais</Link>
-              </li>
             </ul>
           </div>
         </div>
