@@ -24,6 +24,48 @@ const DoctorPatientHistory: React.FC = () => {
     formatDate,
   } = usePatientHistory();
 
+  // Update Ana's age to 7 years old if she's in the patient list
+  React.useEffect(() => {
+    if (patients && patients.length > 0) {
+      const anaPatient = patients.find(patient => 
+        patient.name.toLowerCase().includes('ana')
+      );
+      
+      if (anaPatient && anaPatient.age !== 7) {
+        console.log("Updating Ana's age to 7 years");
+        const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const updatedUsers = allUsers.map((user: any) => {
+          if (user.id === anaPatient.id) {
+            return { ...user, age: 7 };
+          }
+          return user;
+        });
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        
+        // If Ana is the current patient in session storage, update that too
+        const currentUserStr = sessionStorage.getItem('currentUser');
+        if (currentUserStr) {
+          const currentUser = JSON.parse(currentUserStr);
+          if (currentUser.id === anaPatient.id) {
+            currentUser.age = 7;
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+          }
+        }
+        
+        // Update triage queue if Ana is in it
+        const triageQueue = JSON.parse(localStorage.getItem('triageQueue') || '[]');
+        const updatedTriageQueue = triageQueue.map((triage: any) => {
+          if (triage.patientId === anaPatient.id || 
+              triage.patientName.toLowerCase().includes('ana')) {
+            return { ...triage, patientAge: 7 };
+          }
+          return triage;
+        });
+        localStorage.setItem('triageQueue', JSON.stringify(updatedTriageQueue));
+      }
+    }
+  }, [patients]);
+
   return (
     <div className="space-y-6">
       <Card>

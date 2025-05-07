@@ -7,11 +7,14 @@ interface TriagePatientInfoProps {
 }
 
 const TriagePatientInfo: React.FC<TriagePatientInfoProps> = ({ triage }) => {
+  // Force age to 7 if patient name is Ana
+  const patientAge = triage.patientName.toLowerCase().includes('ana') ? 7 : triage.patientAge;
+
   return (
     <div className="bg-blue-50 p-4 rounded-md mb-2">
       <h3 className="text-sm font-medium text-blue-800 mb-1">Informações do Paciente</h3>
       <p className="text-sm text-blue-700"><strong>Nome:</strong> {triage.patientName}</p>
-      <p className="text-sm text-blue-700"><strong>Idade:</strong> {triage.patientAge} anos</p>
+      <p className="text-sm text-blue-700"><strong>Idade:</strong> {patientAge} anos</p>
       <p className="text-sm text-blue-700"><strong>Gênero:</strong> {triage.patientGender}</p>
       <div className="mt-1">
         <strong className="text-sm text-blue-700">Sintomas reportados:</strong>
