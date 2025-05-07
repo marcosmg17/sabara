@@ -183,8 +183,8 @@
   "services": [
     {
       "id": 1,
-      "name": "Triagem Automatizada com IA",
-      "description": "Utilizamos inteligência artificial para analisar sintomas e classificar pacientes por gravidade em tempo real.",
+      "name": "Triagem Automatizada",
+      "description": "Analisamos sintomas e classificamos pacientes por gravidade em tempo real.",
       "icon": "user"
     },
     {
@@ -196,20 +196,8 @@
     {
       "id": 3,
       "name": "Comunicação Digital Integrada",
-      "description": "Informações sobre andamento do atendimento, alta e resultados de exames diretamente no aplicativo ou WhatsApp.",
+      "description": "Informações sobre andamento do atendimento, alta e resultados de exames diretamente no perfil do paciente.",
       "icon": "smartphone"
     },
-    {
-      "id": 4,
-      "name": "Consultas Especializadas",
-      "description": "Atendimento com médicos especializados em diferentes áreas da medicina.",
-      "icon": "hospital"
-    },
-    {
-      "id": 5,
-      "name": "Exames Laboratoriais",
-      "description": "Realizamos diversos tipos de exames com resultados rápidos e precisos.",
-      "icon": "file-text"
-    }
   ]
 }
