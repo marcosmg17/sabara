@@ -10,6 +10,7 @@ import { usePatientConsultation } from '@/hooks/usePatientConsultation';
 import DoctorHeader from './doctor/DoctorHeader';
 import PatientDashboard from './doctor/PatientDashboard';
 import PrescriptionDialog from './doctor/PrescriptionDialog';
+import UTIDialog from './triage/UTIDialog';
 
 const DoctorDashboard: React.FC = () => {
   const queryClient = useQueryClient();
@@ -24,6 +25,7 @@ const DoctorDashboard: React.FC = () => {
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
   const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
   const [selectedTriageId, setSelectedTriageId] = useState<number | null>(null);
+  const [isUtiDialogOpen, setIsUtiDialogOpen] = useState(false);
   
   const {
     selectedDoctor,
@@ -87,8 +89,14 @@ const DoctorDashboard: React.FC = () => {
 
   const handleAssignUTI = (triageId: number) => {
     setSelectedTriageId(triageId);
+    setIsUtiDialogOpen(true);
     setIsPrescriptionOpen(false);
-    assignToUTI.mutate({ triageId });
+  };
+  
+  const handleUTIAssignment = (triageId: number, bedId: string) => {
+    // Now we correctly call assignToUTI with both required parameters
+    assignToUTI.mutate({ triageId, bedId });
+    setIsUtiDialogOpen(false);
   };
 
   const handlePrintPrescription = (triageId: number, diagnosis: string, prescription: string, observation?: string) => {
@@ -245,6 +253,13 @@ const DoctorDashboard: React.FC = () => {
         onComplete={handleCompleteConsultation}
         onPrint={handlePrintPrescription}
         onAssignUTI={handleAssignUTI}
+      />
+      
+      <UTIDialog
+        triageId={selectedTriageId}
+        open={isUtiDialogOpen}
+        onClose={() => setIsUtiDialogOpen(false)}
+        onAssign={handleUTIAssignment}
       />
     </div>
   );
