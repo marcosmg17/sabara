@@ -1,13 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
 import { TriageEntry } from '@/types/triage';
-import { Check, FileText, Printer, Save, Hospital } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePrescriptionDialog } from '@/hooks/usePrescriptionDialog';
+import PatientInfoDisplay from './prescription/PatientInfoDisplay';
+import PrescriptionForm from './prescription/PrescriptionForm';
+import PrescriptionActions from './prescription/PrescriptionActions';
 
 interface PrescriptionDialogProps {
   triage: TriageEntry | null;
@@ -28,19 +28,17 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
   onPrint,
   onAssignUTI
 }) => {
-  const [diagnosis, setDiagnosis] = useState<string>('');
-  const [prescription, setPrescription] = useState<string>('');
-  const [observation, setObservation] = useState<string>('');
-  const [saving, setSaving] = useState<boolean>(false);
   const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (triage) {
-      setDiagnosis(triage.doctorDiagnosis || '');
-      setPrescription(triage.prescription || '');
-      setObservation(triage.doctorObservation || '');
-    }
-  }, [triage]);
+  const {
+    diagnosis,
+    setDiagnosis,
+    prescription,
+    setPrescription,
+    observation,
+    setObservation,
+    saving,
+    setSaving
+  } = usePrescriptionDialog(triage);
 
   const handleSave = () => {
     if (!triage) return;
@@ -67,136 +65,27 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
 
   const renderContent = () => (
     <div className="grid gap-4 py-4">
-      {triage?.measurements && (
-        <div className="bg-green-50 p-4 rounded-md mb-2">
-          <h3 className="text-sm font-medium text-green-800 mb-2">Triagem de Enfermagem</h3>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            {triage.measurements.temperature && (
-              <div><span className="font-medium">Temperatura:</span> {triage.measurements.temperature}°C</div>
-            )}
-            {triage.measurements.heartRate && (
-              <div><span className="font-medium">Batimentos:</span> {triage.measurements.heartRate} BPM</div>
-            )}
-            {triage.measurements.bloodPressure && (
-              <div><span className="font-medium">Pressão:</span> {triage.measurements.bloodPressure}</div>
-            )}
-            {triage.measurements.oxygenSaturation && (
-              <div><span className="font-medium">Saturação O²:</span> {triage.measurements.oxygenSaturation}%</div>
-            )}
-            {triage.measurements.glucoseLevel && (
-              <div><span className="font-medium">Glicemia:</span> {triage.measurements.glucoseLevel} mg/dL</div>
-            )}
-          </div>
-          {triage.nurseNotes && (
-            <div className="mt-2 border-t border-green-200 pt-2">
-              <span className="font-medium">Observações da enfermagem:</span>
-              <p className="text-sm mt-1">{triage.nurseNotes}</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="bg-blue-50 p-4 rounded-md mb-2">
-        <h3 className="text-sm font-medium text-blue-800 mb-1">Informações do Paciente</h3>
-        <p className="text-sm text-blue-700"><strong>Nome:</strong> {triage?.patientName}</p>
-        <p className="text-sm text-blue-700"><strong>Idade:</strong> {triage?.patientAge} anos</p>
-        <p className="text-sm text-blue-700"><strong>Gênero:</strong> {triage?.patientGender}</p>
-        <div className="mt-1">
-          <strong className="text-sm text-blue-700">Sintomas reportados:</strong>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {triage?.symptoms.map((symptom, i) => (
-              <span key={i} className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                {symptom}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <label htmlFor="diagnosis" className="text-sm font-medium">
-          Diagnóstico
-        </label>
-        <Input
-          id="diagnosis"
-          placeholder="Insira o diagnóstico"
-          value={diagnosis}
-          onChange={(e) => setDiagnosis(e.target.value)}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label htmlFor="prescription" className="text-sm font-medium">
-          Prescrição Médica
-        </label>
-        <Textarea
-          id="prescription"
-          placeholder="Insira a prescrição médica..."
-          value={prescription}
-          onChange={(e) => setPrescription(e.target.value)}
-          rows={6}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label htmlFor="observation" className="text-sm font-medium">
-          Observações
-        </label>
-        <Textarea
-          id="observation"
-          placeholder="Adicione observações adicionais..."
-          value={observation}
-          onChange={(e) => setObservation(e.target.value)}
-          rows={3}
-        />
-      </div>
+      <PatientInfoDisplay triage={triage} />
+      <PrescriptionForm
+        diagnosis={diagnosis}
+        setDiagnosis={setDiagnosis}
+        prescription={prescription}
+        setPrescription={setPrescription}
+        observation={observation}
+        setObservation={setObservation}
+      />
     </div>
   );
 
   const renderFooter = () => (
-    <div className="flex justify-between w-full flex-col-reverse sm:flex-row gap-2">
-      <Button variant="outline" onClick={onClose}>
-        Cancelar
-      </Button>
-      <div className="flex gap-2 flex-wrap justify-end">
-        {onAssignUTI && (
-          <Button 
-            variant="outline" 
-            onClick={handleAssignUTI}
-            className="flex items-center gap-2 text-red-500 border-red-500 hover:bg-red-50"
-          >
-            <Hospital className="h-4 w-4" />
-            Encaminhar para UTI
-          </Button>
-        )}
-        <Button 
-          variant="outline" 
-          onClick={handleSave} 
-          disabled={saving}
-          className="flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          Salvar
-        </Button>
-        {onPrint && (
-          <Button 
-            variant="outline" 
-            onClick={handlePrint}
-            className="flex items-center gap-2"
-          >
-            <Printer className="h-4 w-4" />
-            Imprimir
-          </Button>
-        )}
-        <Button 
-          onClick={handleComplete}
-          className="flex items-center gap-2"
-        >
-          <Check className="h-4 w-4" />
-          Concluir Atendimento
-        </Button>
-      </div>
-    </div>
+    <PrescriptionActions
+      onClose={onClose}
+      onSave={handleSave}
+      onComplete={handleComplete}
+      onPrint={onPrint ? handlePrint : undefined}
+      onAssignUTI={onAssignUTI ? handleAssignUTI : undefined}
+      saving={saving}
+    />
   );
 
   if (isMobile) {
