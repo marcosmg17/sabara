@@ -14,7 +14,7 @@ const Hero: React.FC = () => {
               Inovação em Saúde para o seu bem-estar
             </h1>
             <p className="text-lg md:text-xl text-gray-600 mb-8">
-              Hospital Sabara Health conecta tecnologia avançada e cuidado humanizado para oferecer a melhor experiência em saúde para você e sua família.
+              Smart Care conecta tecnologia avançada e cuidado humanizado para oferecer a melhor experiência em saúde.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link to="/servicos">
