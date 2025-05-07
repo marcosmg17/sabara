@@ -62,7 +62,7 @@ const TriageDemo: React.FC = () => {
       
       setTriageResult({ priority, recommendations });
       setIsAnalyzing(false);
-    }, 2000); // 2 second delay to simulate AI processing
+    }, 2000); // 2 second delay to simulate processing
   };
 
   const getRecommendations = (priority: number) => {
