@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +47,21 @@ const PatientCard: React.FC<PatientCardProps> = ({
     patient.measurements?.oxygenSaturation || 
     patient.measurements?.glucoseLevel
   );
+  
+  // Ensure all patients are children (ages 1-12)
+  const getChildAge = (patientId: number, patientName: string, originalAge?: number) => {
+    // Special case for Ana - keep her at 7
+    if (patientName.toLowerCase().includes('ana')) return 7;
+    
+    // If we already have a valid child age, use it
+    if (originalAge && originalAge >= 1 && originalAge <= 12) return originalAge;
+    
+    // Otherwise, use ID to generate a consistent child age
+    const seedValue = patientId % 12;
+    return seedValue === 0 ? 12 : seedValue;
+  };
+  
+  const patientAge = getChildAge(patient.id, patient.patientName, patient.patientAge);
 
   return (
     <Card className="mb-4 hover:shadow-md transition-shadow">
@@ -56,7 +70,7 @@ const PatientCard: React.FC<PatientCardProps> = ({
           <div>
             <h3 className="font-medium text-lg">{patient.patientName}</h3>
             <div className="text-sm text-gray-500 mb-2">
-              {patient.patientAge} anos • {patient.patientGender}
+              {patientAge} anos • {patient.patientGender}
             </div>
             
             <div className="flex items-center gap-2 mb-2">

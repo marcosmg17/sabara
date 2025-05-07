@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -36,6 +35,19 @@ const PatientList: React.FC<PatientListProps> = ({
       triage.measurements.glucoseLevel
     );
   };
+  
+  // Ensure all patients are children (ages 1-12)
+  const getChildAge = (patientId: number, patientName: string, originalAge?: number) => {
+    // Special case for Ana - keep her at 7
+    if (patientName.toLowerCase().includes('ana')) return 7;
+    
+    // If we already have a valid child age, use it
+    if (originalAge && originalAge >= 1 && originalAge <= 12) return originalAge;
+    
+    // Otherwise, use ID to generate a consistent child age
+    const seedValue = patientId % 12;
+    return seedValue === 0 ? 12 : seedValue;
+  };
 
   return (
     <Table>
@@ -52,8 +64,7 @@ const PatientList: React.FC<PatientListProps> = ({
       </TableHeader>
       <TableBody>
         {assignedPatients.map((triage) => {
-          // Ensure Ana's age is displayed as 7
-          const patientAge = triage.patientName.toLowerCase().includes('ana') ? 7 : triage.patientAge;
+          const patientAge = getChildAge(triage.id, triage.patientName, triage.patientAge);
           
           return (
             <TableRow key={triage.id}>

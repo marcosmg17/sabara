@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { TriageEntry } from '@/types/triage';
@@ -36,10 +35,29 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
   
   const hasNurseMeasured = hasMeasurements(triage.measurements);
   
+  // Ensure all patients are children (ages 1-12)
+  const getChildAge = (patientId: number, patientName: string, originalAge?: number) => {
+    // Special case for Ana - keep her at 7
+    if (patientName.toLowerCase().includes('ana')) return 7;
+    
+    // If we already have a valid child age, use it
+    if (originalAge && originalAge >= 1 && originalAge <= 12) return originalAge;
+    
+    // Otherwise, use ID to generate a consistent child age
+    const seedValue = patientId % 12;
+    return seedValue === 0 ? 12 : seedValue;
+  };
+  
+  // Update patient age with valid child age
+  const triageWithChildAge = {
+    ...triage,
+    patientAge: getChildAge(triage.id, triage.patientName, triage.patientAge)
+  };
+  
   // Handle row click to open measurements dialog
   const handleRowClick = () => {
     if (userRole === 'nurse' && triage.status === 'nurse-triage' && triage.assignedNurse) {
-      onMeasurementsClick(triage);
+      onMeasurementsClick(triageWithChildAge);
     } else if (userRole === 'nurse' && triage.status === 'waiting') {
       onAssignNurse(triage.id);
     }
@@ -53,7 +71,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
     if (triage.status === 'waiting') {
       onAssignNurse(triage.id);
     } else if (triage.status === 'nurse-triage') {
-      onMeasurementsClick(triage);
+      onMeasurementsClick(triageWithChildAge);
     }
   };
 
@@ -61,7 +79,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
   const handleSendToDoctorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onSendToDoctor && triage.status === 'nurse-triage') {
-      onSendToDoctor(triage);
+      onSendToDoctor(triageWithChildAge);
     }
   };
   
@@ -80,7 +98,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       
       {!isMobile && (
         <>
-          <TableCell>{triage.patientAge}</TableCell>
+          <TableCell>{triageWithChildAge.patientAge}</TableCell>
           <TableCell>{triage.patientGender}</TableCell>
         </>
       )}
@@ -91,7 +109,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       
       <TableCell onClick={(e) => e.stopPropagation()}>
         <AttendantCell
-          triage={triage}
+          triage={triageWithChildAge}
           userRole={userRole}
           onNurseTriageClick={handleNurseTriageClick}
           onSendToDoctorClick={onSendToDoctor ? handleSendToDoctorClick : undefined}
@@ -101,7 +119,7 @@ const TriageTableRow: React.FC<TriageTableRowProps> = ({
       
       <TableCell onClick={(e) => e.stopPropagation()}>
         <ActionCell
-          triage={triage}
+          triage={triageWithChildAge}
           userRole={userRole}
           hasNurseMeasured={hasNurseMeasured}
           onAssignDoctor={() => onAssignDoctor(triage.id)}

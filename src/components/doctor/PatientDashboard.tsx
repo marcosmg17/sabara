@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import PatientCard from './PatientCard';
@@ -19,16 +18,35 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({
   onStartConsultation,
   onPrescription
 }) => {
+  // Process patients to ensure they all have child-appropriate ages
+  const processedPatients = assignedPatients.map(patient => {
+    // Keep special cases as is (like Ana at 7 years old)
+    if (patient.patientName.toLowerCase().includes('ana') && patient.patientAge === 7) {
+      return patient;
+    }
+    
+    // Otherwise ensure age is child-appropriate (1-12 years)
+    const getChildAge = (patientId: number) => {
+      const seedValue = patientId % 12;
+      return seedValue === 0 ? 12 : seedValue;
+    };
+    
+    return {
+      ...patient,
+      patientAge: getChildAge(patient.id)
+    };
+  });
+
   return (
     <Card>
       <CardContent className="pt-6">
         <DoctorInfo doctor={doctor} />
         
-        {assignedPatients.length > 0 ? (
+        {processedPatients.length > 0 ? (
           <div className="mt-6 space-y-4">
             <h3 className="text-lg font-medium">Pacientes designados para atendimento</h3>
             <div>
-              {assignedPatients.map(patient => (
+              {processedPatients.map(patient => (
                 <PatientCard 
                   key={patient.id}
                   patient={patient}

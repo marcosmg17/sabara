@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TriageEntry } from '@/types/triage';
 
@@ -7,8 +6,20 @@ interface TriagePatientInfoProps {
 }
 
 const TriagePatientInfo: React.FC<TriagePatientInfoProps> = ({ triage }) => {
-  // Force age to 7 if patient name is Ana
-  const patientAge = triage.patientName.toLowerCase().includes('ana') ? 7 : triage.patientAge;
+  // Ensure all patients are children (ages 1-12)
+  const getChildAge = (patientId: number, patientName: string, originalAge?: number) => {
+    // Special case for Ana - keep her at 7
+    if (patientName.toLowerCase().includes('ana')) return 7;
+    
+    // If we already have a valid child age, use it
+    if (originalAge && originalAge >= 1 && originalAge <= 12) return originalAge;
+    
+    // Otherwise, use ID to generate a consistent child age
+    const seedValue = patientId % 12;
+    return seedValue === 0 ? 12 : seedValue;
+  };
+  
+  const patientAge = getChildAge(triage.id, triage.patientName, triage.patientAge);
 
   return (
     <div className="bg-blue-50 p-4 rounded-md mb-2">
