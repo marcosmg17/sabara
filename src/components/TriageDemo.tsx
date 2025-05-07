@@ -29,7 +29,6 @@ const TriageDemo: React.FC = () => {
     } else {
       setSelectedSymptoms([...selectedSymptoms, symptom]);
     }
-
   
     setTriageResult(null);
   };
@@ -39,11 +38,8 @@ const TriageDemo: React.FC = () => {
 
     setIsAnalyzing(true);
     
-
     setTimeout(() => {
-     
       let priority = 4; 
-      
       
       if (selectedSymptoms.includes("Dificuldade respiratória") || 
           selectedSymptoms.includes("Dor no peito")) {
