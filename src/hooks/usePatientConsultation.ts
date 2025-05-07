@@ -15,6 +15,8 @@ export const usePatientConsultation = () => {
   // Function to add consultation to patient history
   const addToPatientHistory = (triage: TriageEntry, currentDoctor: any) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
+    let anaPacient = null;
+    
     const updatedUsers = users.map((user: any) => {
       if (user.id === triage.patientId) {
         // Create medical record
@@ -45,21 +47,46 @@ export const usePatientConsultation = () => {
         };
         triageHistory.unshift(triageRecord);
         
-        // Notify patient
-        notifyPatient.mutate({
-          patientId: user.id,
-          notification: {
-            title: "Consulta concluída",
-            message: `Sua consulta com Dr(a). ${currentDoctor.name} foi concluída. Verifique as receitas e orientações médicas no seu histórico.`,
-          }
+        // Update notifications
+        const notifications = user.notifications || [];
+        notifications.unshift({
+          id: Date.now(),
+          date: new Date().toISOString(),
+          title: "Consulta concluída",
+          message: `Sua consulta com Dr(a). ${currentDoctor.name} foi concluída. Verifique as receitas e orientações médicas no seu histórico.`,
+          read: false
         });
         
-        return { ...user, medicalHistory, triageHistory };
+        // Check if this is Ana for special handling
+        if (user.name && user.name.toLowerCase().includes('ana')) {
+          anaPacient = { ...user, medicalHistory, triageHistory, notifications };
+        }
+        
+        return { ...user, medicalHistory, triageHistory, notifications };
       }
       return user;
     });
     
     localStorage.setItem('users', JSON.stringify(updatedUsers));
+    
+    // Notify patient
+    notifyPatient.mutate({
+      patientId: triage.patientId,
+      notification: {
+        title: "Consulta concluída",
+        message: `Sua consulta com Dr(a). ${currentDoctor.name} foi concluída. Verifique as receitas e orientações médicas no seu histórico.`,
+      }
+    });
+    
+    // If Ana was identified, ensure she's properly updated
+    if (anaPacient) {
+      const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const anaIndex = allUsers.findIndex((u: any) => u.name && u.name.toLowerCase().includes('ana'));
+      if (anaIndex >= 0) {
+        allUsers[anaIndex] = anaPacient;
+        localStorage.setItem('users', JSON.stringify(allUsers));
+      }
+    }
     
     // Update current user in session if it's the same patient
     updateCurrentUserIfNeeded(triage, currentDoctor);
