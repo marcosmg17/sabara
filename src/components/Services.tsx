@@ -42,7 +42,7 @@ const Services: React.FC = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-2">Nossos Serviços</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            O Hospital Smart Care oferece uma ampla gama de serviços de saúde com tecnologia de ponta e equipe médica especializada.
+            O smart care oferece um dashboard com serviços de saúde e com tecnologia de ponta.
           </p>
         </div>
 
