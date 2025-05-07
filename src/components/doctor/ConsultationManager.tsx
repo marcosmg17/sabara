@@ -1,32 +1,31 @@
 
 import React, { useState } from 'react';
-import { useDoctorData } from '@/hooks/useDoctorData';
 import { TriageEntry } from '@/types/triage';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { useTriageActions } from '@/hooks/useTriageActions';
-import { usePatientNotifications } from '@/hooks/usePatientNotifications';
+import { useDoctorData } from '@/hooks/useDoctorData';
 import { usePatientConsultation } from '@/hooks/usePatientConsultation';
-import DoctorHeader from './doctor/DoctorHeader';
-import PatientDashboard from './doctor/PatientDashboard';
-import PrescriptionDialog from './doctor/PrescriptionDialog';
+import { usePatientNotifications } from '@/hooks/usePatientNotifications';
+import PrescriptionDialog from './PrescriptionDialog';
+import { useTriageActions } from '@/hooks/useTriageActions';
 
-const DoctorDashboard: React.FC = () => {
+interface ConsultationManagerProps {
+  selectedDoctorId: string;
+}
+
+const ConsultationManager: React.FC<ConsultationManagerProps> = ({ selectedDoctorId }) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { assignToUTI } = useTriageActions();
   const { notifyPatient } = usePatientNotifications();
   const { handleCompleteConsultation } = usePatientConsultation();
   
-  const currentDoctor = JSON.parse(localStorage.getItem('currentDoctor') || '{}');
-  const selectedDoctorId = currentDoctor.id ? currentDoctor.id.toString() : '';
-  
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
   const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
+  const [isUtiDialogOpen, setIsUtiDialogOpen] = useState(false);
   const [selectedTriageId, setSelectedTriageId] = useState<number | null>(null);
   
   const {
-    selectedDoctor,
     assignedPatients,
     startPatientConsultation
   } = useDoctorData(selectedDoctorId);
@@ -46,6 +45,8 @@ const DoctorDashboard: React.FC = () => {
     // Notification to the patient
     const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
     const triage = currentQueue.find(t => t.id === triageId);
+    const currentDoctor = JSON.parse(localStorage.getItem('currentDoctor') || '{}');
+    
     if (triage) {
       notifyPatient.mutate({
         patientId: triage.patientId,
@@ -87,8 +88,8 @@ const DoctorDashboard: React.FC = () => {
 
   const handleAssignUTI = (triageId: number) => {
     setSelectedTriageId(triageId);
+    setIsUtiDialogOpen(true);
     setIsPrescriptionOpen(false);
-    assignToUTI.mutate({ triageId });
   };
 
   const handlePrintPrescription = (triageId: number, diagnosis: string, prescription: string, observation?: string) => {
@@ -107,6 +108,7 @@ const DoctorDashboard: React.FC = () => {
     if (!triage) return;
 
     const currentDate = new Date().toLocaleDateString('pt-BR');
+    const currentDoctor = JSON.parse(localStorage.getItem('currentDoctor') || '{}');
     const doctor = currentDoctor.name || 'Médico(a)';
     
     printWindow.document.write(`
@@ -221,33 +223,20 @@ const DoctorDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <DoctorHeader title="Painel do Médico" />
-      
-      {selectedDoctor ? (
-        <PatientDashboard
-          doctor={selectedDoctor}
-          assignedPatients={assignedPatients}
-          onStartConsultation={handleStartConsultation}
-          onPrescription={handleOpenPrescription}
+    <>
+      {selectedTriage && (
+        <PrescriptionDialog
+          triage={selectedTriage}
+          open={isPrescriptionOpen}
+          onClose={() => setIsPrescriptionOpen(false)}
+          onSave={handleSavePrescription}
+          onComplete={handleCompleteConsultation}
+          onPrint={handlePrintPrescription}
+          onAssignUTI={handleAssignUTI}
         />
-      ) : (
-        <div className="text-center py-8 text-gray-500">
-          Não foi possível encontrar informações do médico logado
-        </div>
       )}
-
-      <PrescriptionDialog
-        triage={selectedTriage}
-        open={isPrescriptionOpen}
-        onClose={() => setIsPrescriptionOpen(false)}
-        onSave={handleSavePrescription}
-        onComplete={handleCompleteConsultation}
-        onPrint={handlePrintPrescription}
-        onAssignUTI={handleAssignUTI}
-      />
-    </div>
+    </>
   );
 };
 
-export default DoctorDashboard;
+export default ConsultationManager;
