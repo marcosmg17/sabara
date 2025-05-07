@@ -6,7 +6,7 @@
       "name": "Ana Silva",
       "email": "ana.silva@example.com",
       "password": "senha123",
-      "age": 35,
+      "age": 7,
       "gender": "Feminino",
       "appointments": [
         {
@@ -56,7 +56,7 @@
       "name": "Carlos Oliveira",
       "email": "carlos.oliveira@example.com",
       "password": "senha456",
-      "age": 42,
+      "age": 5,
       "gender": "Masculino",
       "appointments": [
         {
@@ -83,7 +83,7 @@
       "name": "Maria Santos",
       "email": "maria.santos@example.com",
       "password": "senha789",
-      "age": 28,
+      "age": 6,
       "gender": "Feminino",
       "appointments": [],
       "examResults": [],
