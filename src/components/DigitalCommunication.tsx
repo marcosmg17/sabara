@@ -48,7 +48,7 @@ const DigitalCommunication: React.FC = () => {
                 <div className="bg-sabara-primary text-white p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Hospital className="h-6 w-6" />
-                    <h3 className="font-semibold">Hospital Sabara Health</h3>
+                    <h3 className="font-semibold">Smart Care</h3>
                   </div>
                   <p className="text-sm">Centro de Notificações</p>
                 </div>
@@ -59,18 +59,18 @@ const DigitalCommunication: React.FC = () => {
                     <>
                       <div className="bg-green-50 rounded-lg p-3">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-sm">Sabara Health</span>
+                          <span className="font-semibold text-sm">Smart Care</span>
                           <span className="text-xs text-gray-500">09:45</span>
                         </div>
-                        <p className="text-sm">Olá Ana, seu exame de sangue está pronto! Você já pode acessar os resultados pelo aplicativo ou retirar no hospital.</p>
+                        <p className="text-sm">Olá Ana, Já está no aplicativo seu ultimo atendimento! Você já pode acessar os resultados.</p>
                       </div>
                       
                       <div className="bg-green-50 rounded-lg p-3">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-sm">Sabara Health</span>
+                          <span className="font-semibold text-sm">Smart Care</span>
                           <span className="text-xs text-gray-500">Ontem</span>
                         </div>
-                        <p className="text-sm">Lembrete: Sua consulta com Dr. Ricardo Matos (Cardiologia) está agendada para amanhã às 14:30. Por favor, confirme sua presença.</p>
+                        <p className="text-sm">Lembrete: Seu atendimento com Dr. Ricardo Matos está disponivel no seu perfil.</p>
                       </div>
                       
                       <div className="bg-green-50 rounded-lg p-3">
