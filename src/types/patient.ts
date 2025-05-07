@@ -9,6 +9,14 @@ export interface PatientMedicalRecord {
   measurements?: any;
 }
 
+export interface PatientNotification {
+  id: number;
+  date: string;
+  title: string;
+  message: string;
+  read: boolean;
+}
+
 export interface Patient {
   id: number;
   name: string;
@@ -16,4 +24,5 @@ export interface Patient {
   gender?: string;
   email: string;
   medicalHistory: PatientMedicalRecord[];
+  notifications?: PatientNotification[];
 }

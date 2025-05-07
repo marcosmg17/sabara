@@ -1,59 +1,92 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
 import { Doctor } from '@/types/doctor';
 import { TriageEntry } from '@/types/triage';
+import { useToast } from '@/hooks/use-toast';
+import { usePatientNotifications } from './usePatientNotifications';
 
 export const useDoctorActions = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const autoAssignDoctor = (currentDoctors: Doctor[], currentQueue: TriageEntry[]) => {
-    const availableDoctors = currentDoctors.filter(d => d.available);
-    if (availableDoctors.length === 0) return null;
-    return availableDoctors[0];
-  };
+  const { toast } = useToast();
+  const { notifyPatient } = usePatientNotifications();
 
   const assignDoctor = useMutation({
     mutationFn: async ({ triageId }: { triageId: number }) => {
-      const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      const currentDoctors = queryClient.getQueryData(['doctors']) as Doctor[] || [];
+      const currentDoctors = JSON.parse(localStorage.getItem('doctors') || '[]') as Doctor[];
+      const currentQueue = JSON.parse(localStorage.getItem('triageQueue') || '[]') as TriageEntry[];
       
-      const doctor = autoAssignDoctor(currentDoctors, currentQueue);
-      if (!doctor) throw new Error("No available doctors");
+      // Find available doctors
+      const availableDoctors = currentDoctors.filter(doc => doc.available);
+      if (availableDoctors.length === 0) {
+        throw new Error("No doctors available");
+      }
       
-      const updatedDoctors = currentDoctors.map(d => 
-        d.id === doctor.id ? { ...d, available: false } : d
+      // Find the doctor with the fewest assigned patients
+      let selectedDoctor = availableDoctors[0];
+      let minPatients = Infinity;
+      
+      for (const doctor of availableDoctors) {
+        const patientCount = currentQueue.filter(t => 
+          t.assignedDoctor && t.assignedDoctor.id === doctor.id
+        ).length;
+        
+        if (patientCount < minPatients) {
+          minPatients = patientCount;
+          selectedDoctor = doctor;
+        }
+      }
+      
+      // Assign doctor and update doctor's availability
+      const updatedDoctors = currentDoctors.map(doc => 
+        doc.id === selectedDoctor.id ? { ...doc, available: false } : doc
       );
       
+      // Find a suitable room
+      const availableRooms = ['Sala 1', 'Sala 2', 'Sala 3', 'Sala 4', 'Sala 5'];
+      const usedRooms = currentQueue
+        .filter(t => t.assignedRoom !== null)
+        .map(t => t.assignedRoom);
+      
+      const availableRoom = availableRooms.find(room => !usedRooms.includes(room)) || 'Sala de Espera';
+      
+      // Update the triage entry
       const updatedQueue = currentQueue.map(triage => 
-        triage.id === triageId 
-          ? { 
-              ...triage, 
-              assignedDoctor: doctor, 
-              assignedRoom: doctor.room,
-              status: 'assigned' 
-            } 
-          : triage
+        triage.id === triageId ? {
+          ...triage,
+          assignedDoctor: selectedDoctor,
+          status: 'assigned',
+          assignedRoom: availableRoom
+        } : triage
       );
       
-      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       localStorage.setItem('doctors', JSON.stringify(updatedDoctors));
+      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       
-      return { triageId, doctor };
+      // Get patient info to notify them
+      const triage = updatedQueue.find(t => t.id === triageId);
+      if (triage) {
+        notifyPatient.mutate({
+          patientId: triage.patientId,
+          notification: {
+            title: "Médico designado",
+            message: `Dr(a). ${selectedDoctor.name} foi designado para seu atendimento. Por favor, dirija-se à ${availableRoom}.`
+          }
+        });
+      }
+      
+      return { doctorId: selectedDoctor.id, triageId, room: availableRoom };
     },
-    onSuccess: ({ doctor }) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
       queryClient.invalidateQueries({ queryKey: ['doctors'] });
-      
       toast({
-        title: "Paciente atribuído ao médico",
-        description: `Paciente atribuído ao(à) ${doctor.name} na sala ${doctor.room}`,
+        title: "Médico designado",
+        description: `Médico designado para o paciente na ${data.room}`
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
-        title: "Erro na atribuição",
+        title: "Erro",
         description: "Não há médicos disponíveis no momento",
         variant: "destructive"
       });
@@ -61,55 +94,59 @@ export const useDoctorActions = () => {
   });
 
   const toggleDoctorAvailability = useMutation({
-    mutationFn: async ({ doctorId, available }: { doctorId: number, available: boolean }) => {
-      const currentDoctors = queryClient.getQueryData(['doctors']) as Doctor[] || [];
-      
-      const updatedDoctors = currentDoctors.map(doctor => 
-        doctor.id === doctorId ? { ...doctor, available } : doctor
+    mutationFn: async ({ doctorId }: { doctorId: number }) => {
+      const currentDoctors = JSON.parse(localStorage.getItem('doctors') || '[]') as Doctor[];
+      const updatedDoctors = currentDoctors.map(doc => 
+        doc.id === doctorId ? { ...doc, available: !doc.available } : doc
       );
       
       localStorage.setItem('doctors', JSON.stringify(updatedDoctors));
-      
-      return { doctorId, available };
+      return doctorId;
     },
-    onSuccess: ({ available }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctors'] });
-      
-      toast({
-        title: `Status do médico atualizado`,
-        description: `Médico agora está ${available ? 'disponível' : 'indisponível'} para atendimento`,
-      });
     }
   });
 
   const removeTriage = useMutation({
     mutationFn: async (triageId: number) => {
-      const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      const currentDoctors = queryClient.getQueryData(['doctors']) as Doctor[] || [];
+      const currentQueue = JSON.parse(localStorage.getItem('triageQueue') || '[]') as TriageEntry[];
       
       const triage = currentQueue.find(t => t.id === triageId);
+      if (!triage) throw new Error("Triage not found");
       
-      let updatedDoctors = [...currentDoctors];
-      if (triage?.assignedDoctor) {
-        updatedDoctors = currentDoctors.map(d => 
-          d.id === triage.assignedDoctor?.id ? { ...d, available: true } : d
+      // If doctor was assigned, make them available again
+      if (triage.assignedDoctor) {
+        const currentDoctors = JSON.parse(localStorage.getItem('doctors') || '[]') as Doctor[];
+        const updatedDoctors = currentDoctors.map(doc => 
+          doc.id === triage.assignedDoctor?.id ? { ...doc, available: true } : doc
         );
+        localStorage.setItem('doctors', JSON.stringify(updatedDoctors));
       }
       
-      const updatedQueue = currentQueue.filter(triage => triage.id !== triageId);
-      
+      // Remove the triage entry from queue
+      const updatedQueue = currentQueue.filter(t => t.id !== triageId);
       localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
-      localStorage.setItem('doctors', JSON.stringify(updatedDoctors));
       
-      return { triageId, doctorId: triage?.assignedDoctor?.id };
+      // Notify patient that their case has been removed
+      if (triage) {
+        notifyPatient.mutate({
+          patientId: triage.patientId,
+          notification: {
+            title: "Atendimento cancelado",
+            message: "Seu atendimento foi cancelado. Por favor, entre em contato com a recepção para mais informações."
+          }
+        });
+      }
+      
+      return triageId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
       queryClient.invalidateQueries({ queryKey: ['doctors'] });
-      
       toast({
-        title: "Paciente removido da fila",
-        description: "Triagem concluída com sucesso",
+        title: "Triagem removida",
+        description: "A triagem foi removida da fila com sucesso"
       });
     }
   });

@@ -5,9 +5,10 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ClipboardList, FileText, HeartPulse, Clock } from 'lucide-react';
+import { ClipboardList, FileText, HeartPulse, Clock, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import PatientNotifications from '@/components/patient/PatientNotifications';
 
 interface PatientHistoryRecord {
   id: number;
@@ -25,6 +26,14 @@ interface Triage {
   priority: string;
   recommendation: string;
   preTriageNotes?: string;
+}
+
+interface Notification {
+  id: number;
+  date: string;
+  title: string;
+  message: string;
+  read: boolean;
 }
 
 const PatientHistory = () => {
@@ -60,6 +69,31 @@ const PatientHistory = () => {
     }).format(date);
   };
 
+  const markNotificationAsRead = (notificationId: number) => {
+    if (!user) return;
+    
+    const updatedNotifications = (user.notifications || []).map((notification: Notification) =>
+      notification.id === notificationId ? { ...notification, read: true } : notification
+    );
+    
+    const updatedUser = { ...user, notifications: updatedNotifications };
+    setUser(updatedUser);
+    sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    
+    // Update in localStorage as well
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedUsers = users.map((u: any) => {
+      if (u.id === user.id) {
+        return { 
+          ...u, 
+          notifications: updatedNotifications 
+        };
+      }
+      return u;
+    });
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -70,6 +104,8 @@ const PatientHistory = () => {
 
   const medicalHistory: PatientHistoryRecord[] = user.medicalHistory || [];
   const triageHistory: Triage[] = user.triageHistory || [];
+  const notifications: Notification[] = user.notifications || [];
+  const unreadCount = notifications.filter((notification: Notification) => !notification.read).length;
 
   return (
     <>
@@ -95,6 +131,15 @@ const PatientHistory = () => {
               <TabsTrigger value="triage" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Triagens
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                Notificações
+                {unreadCount > 0 && (
+                  <span className="ml-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
             
@@ -262,6 +307,21 @@ const PatientHistory = () => {
                       Não há registros de triagem disponíveis
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="notifications">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notificações do Hospital</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PatientNotifications 
+                    notifications={notifications} 
+                    onMarkAsRead={markNotificationAsRead} 
+                    formatDate={formatDate}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>

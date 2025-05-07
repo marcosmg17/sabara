@@ -1,270 +1,219 @@
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
-import { Nurse } from '@/types/nurse';
 import { TriageEntry, TriageMeasurements } from '@/types/triage';
+import { Nurse } from '@/types/nurse';
+import { useToast } from '@/hooks/use-toast';
+import { usePatientNotifications } from './usePatientNotifications';
 
 export const useNurseActions = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { notifyPatient } = usePatientNotifications();
 
-  // Function to auto-assign a nurse
-  const autoAssignNurse = (currentNurses: Nurse[], currentQueue: TriageEntry[]) => {
-    const availableNurses = currentNurses.filter(n => n.available && n.status === 'available');
-    if (availableNurses.length === 0) return null;
-    return availableNurses[0];
-  };
-
+  // Assign nurse to triage
   const assignNurse = useMutation({
-    mutationFn: async ({ triageId, nurseId }: { triageId: number, nurseId?: number }) => {
-      const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]');
+    mutationFn: async ({ triageId }: { triageId: number }) => {
+      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]') as Nurse[];
+      const currentQueue = JSON.parse(localStorage.getItem('triageQueue') || '[]') as TriageEntry[];
       
-      let nurse;
-      if (nurseId) {
-        nurse = currentNurses.find((n: Nurse) => n.id === nurseId);
-      } else {
-        // Auto-assign if no specific nurse is provided
-        nurse = autoAssignNurse(currentNurses, currentQueue);
+      // Find available nurses
+      const availableNurses = currentNurses.filter(nurse => nurse.available);
+      
+      if (availableNurses.length === 0) {
+        throw new Error("No nurses available");
       }
       
-      if (!nurse) throw new Error("No available nurses");
+      // Find the nurse with the fewest assigned patients
+      let selectedNurse = availableNurses[0];
+      let minPatients = Infinity;
       
-      console.log("Assigning nurse:", nurse.name, "to triage:", triageId);
+      for (const nurse of availableNurses) {
+        const patientCount = currentQueue.filter(t => 
+          t.assignedNurse && t.assignedNurse.id === nurse.id
+        ).length;
+        
+        if (patientCount < minPatients) {
+          minPatients = patientCount;
+          selectedNurse = nurse;
+        }
+      }
       
-      // Update nurse status
-      const updatedNurses = currentNurses.map((n: Nurse) => 
-        n.id === nurse!.id ? { ...n, available: false, status: 'busy', currentTriageId: triageId } : n
-      );
-      
-      // Update triage entry with assigned nurse
+      // Update the triage entry
       const updatedQueue = currentQueue.map(triage => 
-        triage.id === triageId 
-          ? { 
-              ...triage, 
-              assignedNurse: nurse, 
-              status: 'nurse-triage' as const 
-            } 
-          : triage
+        triage.id === triageId ? {
+          ...triage,
+          assignedNurse: selectedNurse,
+          status: 'nurse-triage'
+        } : triage
       );
       
-      // Save to localStorage
       localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
-      localStorage.setItem('nurses', JSON.stringify(updatedNurses));
       
-      // Update current nurse if this was the currently logged in nurse
-      const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
-      if (currentNurse && currentNurse.id === nurse.id) {
-        localStorage.setItem('currentNurse', JSON.stringify({ 
-          ...currentNurse, 
-          available: false, 
-          status: 'busy',
-          currentTriageId: triageId 
-        }));
+      // Get patient info to notify them
+      const triage = updatedQueue.find(t => t.id === triageId);
+      if (triage) {
+        notifyPatient.mutate({
+          patientId: triage.patientId,
+          notification: {
+            title: "Enfermeiro(a) designado(a)",
+            message: `Enfermeiro(a) ${selectedNurse.name} irá realizar sua triagem. Por favor, aguarde ser chamado(a).`
+          }
+        });
       }
       
-      // Automatically open measurements dialog by returning both triageId and updated triage
-      const updatedTriage = updatedQueue.find(t => t.id === triageId);
-      return { triageId, nurse, triage: updatedTriage };
+      return { nurseId: selectedNurse.id, triageId, triage: triage };
     },
-    onSuccess: ({ nurse }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
-      queryClient.invalidateQueries({ queryKey: ['nurses'] });
-      
       toast({
-        title: "Paciente atribuído à enfermagem",
-        description: `Paciente atribuído ao(à) enfermeiro(a) ${nurse.name}`,
+        title: "Enfermeiro designado",
+        description: "Um enfermeiro foi designado para realizar a triagem"
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
-        title: "Erro na atribuição",
+        title: "Erro",
         description: "Não há enfermeiros disponíveis no momento",
         variant: "destructive"
       });
     }
   });
 
+  // Update triage measurements
   const updateTriageMeasurements = useMutation({
     mutationFn: async ({ 
       triageId, 
-      measurements, 
+      measurements,
       notes 
     }: { 
       triageId: number, 
       measurements: TriageMeasurements,
-      notes?: string
-    }) => {
-      const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      
-      const updatedQueue = currentQueue.map(triage => 
-        triage.id === triageId 
-          ? { 
-              ...triage,
-              measurements: { ...triage.measurements, ...measurements },
-              nurseNotes: notes || triage.nurseNotes
-            } 
-          : triage
-      );
-      
-      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
-      
-      return { triageId };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
-      
-      toast({
-        title: "Triagem atualizada",
-        description: "As medições e notas foram salvas com sucesso",
-      });
-    }
-  });
-
-  const completeNurseTriage = useMutation({
-    mutationFn: async ({ triageId }: { triageId: number }) => {
-      const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]');
-      
-      const triage = currentQueue.find(t => t.id === triageId);
-      
-      let updatedNurses = [...currentNurses];
-      if (triage?.assignedNurse) {
-        updatedNurses = currentNurses.map((n: Nurse) => 
-          n.id === triage.assignedNurse?.id ? { ...n, available: true, status: 'available', currentTriageId: undefined } : n
-        );
-      }
-      
-      const updatedQueue = currentQueue.map(t => 
-        t.id === triageId ? { ...t, status: 'waiting' } : t
-      );
-      
-      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
-      localStorage.setItem('nurses', JSON.stringify(updatedNurses));
-      
-      // Update current nurse if this was the currently logged in nurse
-      const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
-      if (currentNurse && triage?.assignedNurse && currentNurse.id === triage.assignedNurse.id) {
-        localStorage.setItem('currentNurse', JSON.stringify({ 
-          ...currentNurse, 
-          available: true, 
-          status: 'available',
-          currentTriageId: undefined 
-        }));
-      }
-      
-      return { triageId };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
-      queryClient.invalidateQueries({ queryKey: ['nurses'] });
-      
-      toast({
-        title: "Triagem de enfermagem concluída",
-        description: "O paciente está pronto para atendimento médico",
-      });
-    }
-  });
-
-  // Send to doctor function - updated to change status to 'assigned' directly
-  const sendToDoctor = useMutation({
-    mutationFn: async ({ 
-      triageId, 
-      measurements, 
-      notes 
-    }: { 
-      triageId: number, 
-      measurements?: TriageMeasurements,
       notes?: string 
     }) => {
-      // First save any pending measurements if provided
-      if (measurements || notes) {
-        const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-        const triage = currentQueue.find(t => t.id === triageId);
-        
-        if (triage) {
-          const updatedQueue = currentQueue.map(t => 
-            t.id === triageId ? { 
-              ...t, 
-              measurements: measurements ? { ...t.measurements, ...measurements } : t.measurements,
-              nurseNotes: notes || t.nurseNotes
-            } : t
-          );
-          
-          localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
-          queryClient.setQueryData(['triageQueue'], updatedQueue);
-        }
+      const currentQueue = JSON.parse(localStorage.getItem('triageQueue') || '[]') as TriageEntry[];
+      
+      const updatedQueue = currentQueue.map(triage => 
+        triage.id === triageId ? {
+          ...triage,
+          measurements,
+          nurseNotes: notes || triage.nurseNotes
+        } : triage
+      );
+      
+      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
+      
+      // Get patient info to notify them about their measurements
+      const triage = updatedQueue.find(t => t.id === triageId);
+      if (triage) {
+        notifyPatient.mutate({
+          patientId: triage.patientId,
+          notification: {
+            title: "Triagem atualizada",
+            message: "Suas medições de sinais vitais foram registradas. Continue aguardando para o próximo passo do atendimento."
+          }
+        });
       }
       
-      // Now complete the nurse triage, marking nurse as available
-      const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
-      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]');
-      const currentDoctors = JSON.parse(localStorage.getItem('doctors') || '[]');
+      return { triageId, measurements };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
+      toast({
+        title: "Medições atualizadas",
+        description: "As medições foram salvas com sucesso"
+      });
+    }
+  });
+
+  // Complete nurse triage
+  const completeNurseTriage = useMutation({
+    mutationFn: async ({ triageId }: { triageId: number }) => {
+      const currentQueue = JSON.parse(localStorage.getItem('triageQueue') || '[]') as TriageEntry[];
+      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]') as Nurse[];
       
       const triage = currentQueue.find(t => t.id === triageId);
+      if (!triage) throw new Error("Triage not found");
       
       // Make nurse available again
       let updatedNurses = [...currentNurses];
-      if (triage?.assignedNurse) {
-        updatedNurses = currentNurses.map((n: Nurse) => 
-          n.id === triage.assignedNurse?.id ? { ...n, available: true, status: 'available', currentTriageId: undefined } : n
+      if (triage.assignedNurse) {
+        updatedNurses = currentNurses.map(n => 
+          n.id === triage.assignedNurse?.id ? { ...n, available: true } : n
         );
       }
       
-      // Find available doctor
-      const availableDoctors = currentDoctors.filter(d => d.available);
-      const doctor = availableDoctors.length > 0 ? availableDoctors[0] : null;
-      
-      // Set doctor as unavailable if one was found
-      let updatedDoctors = [...currentDoctors];
-      if (doctor) {
-        updatedDoctors = currentDoctors.map(d => 
-          d.id === doctor.id ? { ...d, available: false } : d
-        );
-      }
-      
-      // Set triage status to assigned if a doctor was found, or waiting if not
+      // Update triage status
       const updatedQueue = currentQueue.map(t => 
-        t.id === triageId ? { 
-          ...t, 
-          status: doctor ? 'assigned' : 'waiting',
-          assignedDoctor: doctor || null,
-          assignedRoom: doctor ? doctor.room : null
-        } : t
+        t.id === triageId ? { ...t, assignedNurse: null, status: 'waiting' } : t
       );
       
-      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       localStorage.setItem('nurses', JSON.stringify(updatedNurses));
-      localStorage.setItem('doctors', JSON.stringify(updatedDoctors));
+      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
       
-      // Update current nurse if this was the currently logged in nurse
-      const currentNurse = JSON.parse(localStorage.getItem('currentNurse') || 'null');
-      if (currentNurse && triage?.assignedNurse && currentNurse.id === triage.assignedNurse.id) {
-        localStorage.setItem('currentNurse', JSON.stringify({ 
-          ...currentNurse, 
-          available: true, 
-          status: 'available',
-          currentTriageId: undefined 
-        }));
-      }
+      // Notify patient their triage is complete
+      notifyPatient.mutate({
+        patientId: triage.patientId,
+        notification: {
+          title: "Triagem de enfermagem concluída",
+          message: "Sua triagem com o enfermeiro(a) foi concluída. Aguarde ser chamado(a) pelo médico."
+        }
+      });
       
-      return { triageId, doctor };
+      return { triageId, nurseId: triage.assignedNurse?.id };
     },
-    onSuccess: ({ triageId, doctor }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
       queryClient.invalidateQueries({ queryKey: ['nurses'] });
-      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      toast({
+        title: "Triagem finalizada",
+        description: "A triagem de enfermagem foi concluída com sucesso"
+      });
+    }
+  });
+
+  // Send patient to doctor after triage
+  const sendToDoctor = useMutation({
+    mutationFn: async ({ triageId }: { triageId: number }) => {
+      const currentQueue = JSON.parse(localStorage.getItem('triageQueue') || '[]') as TriageEntry[];
+      const currentNurses = JSON.parse(localStorage.getItem('nurses') || '[]') as Nurse[];
       
-      if (doctor) {
-        toast({
-          title: "Enviado para médico",
-          description: `O paciente foi atribuído ao Dr(a). ${doctor.name} na sala ${doctor.room}`,
-        });
-      } else {
-        toast({
-          title: "Enviado para fila médica",
-          description: "O paciente está na fila de espera para atendimento médico",
-        });
+      const triage = currentQueue.find(t => t.id === triageId);
+      if (!triage) throw new Error("Triage not found");
+      
+      // Make nurse available again
+      let updatedNurses = [...currentNurses];
+      if (triage.assignedNurse) {
+        updatedNurses = currentNurses.map(n => 
+          n.id === triage.assignedNurse?.id ? { ...n, available: true } : n
+        );
       }
+      
+      // Update triage status
+      const updatedQueue = currentQueue.map(t => 
+        t.id === triageId ? { ...t, assignedNurse: null, status: 'waiting' } : t
+      );
+      
+      localStorage.setItem('nurses', JSON.stringify(updatedNurses));
+      localStorage.setItem('triageQueue', JSON.stringify(updatedQueue));
+      
+      // Notify patient they are waiting for a doctor
+      notifyPatient.mutate({
+        patientId: triage.patientId,
+        notification: {
+          title: "Aguardando consulta médica",
+          message: "Sua triagem de enfermagem foi concluída. Por favor, aguarde na sala de espera até ser chamado(a) pelo médico."
+        }
+      });
+      
+      return { triageId, nurseId: triage.assignedNurse?.id };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['triageQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['nurses'] });
+      toast({
+        title: "Paciente enviado para o médico",
+        description: "O paciente está aguardando atendimento médico"
+      });
     }
   });
 

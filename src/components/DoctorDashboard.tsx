@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRound } from 'lucide-react';
@@ -38,6 +37,16 @@ const DoctorDashboard: React.FC = () => {
 
   const handleStartConsultation = (triageId: number) => {
     startPatientConsultation.mutate(triageId);
+    
+    // Notification to the patient
+    const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
+    const triage = currentQueue.find(t => t.id === triageId);
+    if (triage) {
+      notifyPatient(triage.patientId, {
+        title: "Consulta iniciada",
+        message: `O Dr. ${currentDoctor.name || 'médico(a)'} começou sua consulta. Por favor, aguarde na sala ${triage.assignedRoom || 'indicada'}.`
+      });
+    }
   };
 
   const handleOpenPrescription = (triage: TriageEntry) => {
@@ -197,6 +206,47 @@ const DoctorDashboard: React.FC = () => {
     });
   };
 
+  // Function to add notification to patient profile
+  const notifyPatient = (patientId: number, notification: { title: string, message: string }) => {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedUsers = users.map((user: any) => {
+      if (user.id === patientId) {
+        const notifications = user.notifications || [];
+        notifications.unshift({
+          id: Date.now(),
+          date: new Date().toISOString(),
+          title: notification.title,
+          message: notification.message,
+          read: false
+        });
+        return { ...user, notifications };
+      }
+      return user;
+    });
+    
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    
+    // Update current user in session if it's the same patient
+    const currentUserStr = sessionStorage.getItem('currentUser');
+    if (currentUserStr) {
+      const currentUser = JSON.parse(currentUserStr);
+      if (currentUser.id === patientId) {
+        const notifications = currentUser.notifications || [];
+        notifications.unshift({
+          id: Date.now(),
+          date: new Date().toISOString(),
+          title: notification.title,
+          message: notification.message,
+          read: false
+        });
+        sessionStorage.setItem('currentUser', JSON.stringify({ 
+          ...currentUser, 
+          notifications 
+        }));
+      }
+    }
+  };
+
   const handleCompleteConsultation = (triageId: number) => {
     const currentQueue = queryClient.getQueryData(['triageQueue']) as TriageEntry[] || [];
     const triage = currentQueue.find(t => t.id === triageId);
@@ -216,16 +266,98 @@ const DoctorDashboard: React.FC = () => {
             observation: triage.doctorObservation,
             measurements: triage.measurements
           });
-          return { ...user, medicalHistory };
+          
+          // Add this consultation to patient's triage history
+          const triageHistory = user.triageHistory || [];
+          const triageRecord = {
+            id: Date.now(),
+            date: triage.date,
+            symptoms: triage.symptoms,
+            priority: triage.priority,
+            recommendation: `Consulta realizada pelo Dr(a). ${currentDoctor.name}`,
+            preTriageNotes: triage.preTriageNotes,
+            nurseNotes: triage.nurseNotes,
+            doctorDiagnosis: triage.doctorDiagnosis,
+            prescription: triage.prescription
+          };
+          triageHistory.unshift(triageRecord);
+          
+          // Notify patient that consultation is completed
+          const notifications = user.notifications || [];
+          notifications.unshift({
+            id: Date.now(),
+            date: new Date().toISOString(),
+            title: "Consulta concluída",
+            message: `Sua consulta com Dr(a). ${currentDoctor.name} foi concluída. Verifique as receitas e orientações médicas no seu histórico.`,
+            read: false
+          });
+          
+          return { ...user, medicalHistory, triageHistory, notifications };
         }
         return user;
       });
       
       localStorage.setItem('users', JSON.stringify(updatedUsers));
+      
+      // Update current user in session if it's the same patient
+      const currentUserStr = sessionStorage.getItem('currentUser');
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        if (currentUser.id === triage.patientId) {
+          const medicalHistory = currentUser.medicalHistory || [];
+          medicalHistory.unshift({
+            id: Date.now(),
+            date: new Date().toISOString(),
+            doctor: currentDoctor.name,
+            notes: triage.doctorDiagnosis || 'Consulta realizada',
+            prescription: triage.prescription,
+            observation: triage.doctorObservation,
+            measurements: triage.measurements
+          });
+          
+          // Add this consultation to patient's triage history
+          const triageHistory = currentUser.triageHistory || [];
+          const triageRecord = {
+            id: Date.now(),
+            date: triage.date,
+            symptoms: triage.symptoms,
+            priority: triage.priority,
+            recommendation: `Consulta realizada pelo Dr(a). ${currentDoctor.name}`,
+            preTriageNotes: triage.preTriageNotes,
+            nurseNotes: triage.nurseNotes,
+            doctorDiagnosis: triage.doctorDiagnosis,
+            prescription: triage.prescription
+          };
+          triageHistory.unshift(triageRecord);
+          
+          // Notify patient
+          const notifications = currentUser.notifications || [];
+          notifications.unshift({
+            id: Date.now(),
+            date: new Date().toISOString(),
+            title: "Consulta concluída",
+            message: `Sua consulta com Dr(a). ${currentDoctor.name} foi concluída. Verifique as receitas e orientações médicas no seu histórico.`,
+            read: false
+          });
+          
+          sessionStorage.setItem('currentUser', JSON.stringify({ 
+            ...currentUser, 
+            medicalHistory, 
+            triageHistory,
+            notifications 
+          }));
+        }
+      }
     }
     
     completePatientConsultation.mutate(triageId);
     setIsPrescriptionOpen(false);
+    
+    // Notify success
+    toast({
+      title: "Consulta finalizada",
+      description: "A consulta foi encerrada e os dados foram salvos no histórico do paciente",
+    });
   };
 
   return (
