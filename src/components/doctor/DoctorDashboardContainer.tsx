@@ -6,7 +6,6 @@ import PrescriptionDialog from './PrescriptionDialog';
 import UTIDialog from '../triage/UTIDialog';
 import { useDoctorDashboard } from '@/hooks/useDoctorDashboard';
 import { usePrescriptionPrinter } from './PrescriptionPrinter';
-import { TriageEntry } from '@/types/triage';
 import { useEffect } from 'react';
 
 const DoctorDashboardContainer: React.FC = () => {
