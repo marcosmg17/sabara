@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { TriageEntry } from '@/types/triage';
-import { Check, SquarePen } from 'lucide-react';
+import { Check, SquarePen, Hospital } from 'lucide-react';
 
 interface ActionCellProps {
   triage: TriageEntry;
@@ -34,16 +34,25 @@ const ActionCell: React.FC<ActionCellProps> = ({
         </Button>
       )}
       
-      {userRole === 'doctor' && (triage.status === 'assigned' || triage.status === 'in-progress') && (
+      {/* Show UTI button for doctors and staff when patient is assigned or in progress */}
+      {(userRole === 'doctor' || userRole === 'staff') && 
+       (triage.status === 'assigned' || triage.status === 'in-progress') && (
         <Button
           size="sm"
           variant="outline"
           onClick={onAssignUTI}
           className="flex items-center gap-2 text-red-500 border-red-500 hover:bg-red-50"
         >
-          <SquarePen className="h-4 w-4" />
+          <Hospital className="h-4 w-4" />
           UTI
         </Button>
+      )}
+      
+      {/* Show room information if assigned */}
+      {triage.assignedRoom && (
+        <div className="text-xs font-medium text-gray-500 text-center">
+          {triage.assignedRoom}
+        </div>
       )}
       
       {(userRole === 'doctor' || userRole === 'staff') && (

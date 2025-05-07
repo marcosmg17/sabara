@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useTriageQueue } from '@/hooks/useTriageQueue';
 import { useTriageActions } from '@/hooks/useTriageActions';
@@ -124,6 +123,7 @@ export const useTriageQueueHandlers = () => {
 
   const handleUTIAssign = (triageId: number, bedId: string) => {
     assignToUTI.mutate({ triageId, bedId });
+    setIsUtiDialogOpen(false);
   };
   
   const closeUTIDialog = () => {

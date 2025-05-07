@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Bed } from 'lucide-react';
 
 interface UTIBed {
   id: string;
   name: string;
   status: string;
+  isOccupied?: boolean;
 }
 
 interface UTIDialogProps {
@@ -31,7 +33,7 @@ const UTIDialog: React.FC<UTIDialogProps> = ({
       // Get available UTI beds from localStorage
       const beds = JSON.parse(localStorage.getItem('beds') || '[]');
       const utiBeds = beds.filter((bed: any) => 
-        bed.type === 'UTI' && bed.status === 'available'
+        bed.type === 'UTI' && !bed.isOccupied
       );
       setAvailableBeds(utiBeds);
       setSelectedBed(utiBeds.length > 0 ? utiBeds[0].id : '');
@@ -49,14 +51,17 @@ const UTIDialog: React.FC<UTIDialogProps> = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>Encaminhar Paciente para UTI</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Bed className="h-5 w-5" /> 
+            Encaminhar Paciente para UTI
+          </DialogTitle>
         </DialogHeader>
         <div className="py-4">
           {availableBeds.length > 0 ? (
             <div className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="bed" className="text-sm font-medium">
-                  Selecione um Leito de UTI
+                  Selecione um Leito de UTI Disponível
                 </label>
                 <Select value={selectedBed} onValueChange={setSelectedBed}>
                   <SelectTrigger>
@@ -71,6 +76,9 @@ const UTIDialog: React.FC<UTIDialogProps> = ({
                   </SelectContent>
                 </Select>
               </div>
+              <p className="text-sm text-green-600">
+                {availableBeds.length} {availableBeds.length === 1 ? 'leito disponível' : 'leitos disponíveis'}
+              </p>
             </div>
           ) : (
             <p className="text-center text-amber-600">
