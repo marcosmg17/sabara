@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRound } from 'lucide-react';
@@ -8,16 +9,20 @@ import PrescriptionDialog from './doctor/PrescriptionDialog';
 import { TriageEntry } from '@/types/triage';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { useTriageActions } from '@/hooks/useTriageActions';
 
 const DoctorDashboard: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { assignToUTI } = useTriageActions();
   const currentDoctor = JSON.parse(localStorage.getItem('currentDoctor') || '{}');
   
   const selectedDoctorId = currentDoctor.id ? currentDoctor.id.toString() : '';
   
   const [selectedTriage, setSelectedTriage] = useState<TriageEntry | null>(null);
   const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
+  const [isUtiDialogOpen, setIsUtiDialogOpen] = useState(false);
+  const [selectedTriageId, setSelectedTriageId] = useState<number | null>(null);
   
   const {
     selectedDoctor,
@@ -75,6 +80,12 @@ const DoctorDashboard: React.FC = () => {
       title: "Prescrição salva",
       description: "Os dados do atendimento foram salvos com sucesso",
     });
+  };
+
+  const handleAssignUTI = (triageId: number) => {
+    setSelectedTriageId(triageId);
+    setIsUtiDialogOpen(true);
+    setIsPrescriptionOpen(false);
   };
 
   const handlePrintPrescription = (triageId: number, diagnosis: string, prescription: string, observation?: string) => {
@@ -400,6 +411,7 @@ const DoctorDashboard: React.FC = () => {
         onSave={handleSavePrescription}
         onComplete={handleCompleteConsultation}
         onPrint={handlePrintPrescription}
+        onAssignUTI={handleAssignUTI}
       />
     </div>
   );

@@ -6,7 +6,13 @@ export interface PatientMedicalRecord {
   notes: string;
   prescription?: string;
   observation?: string;
-  measurements?: any;
+  measurements?: {
+    temperature?: number;
+    heartRate?: number;
+    bloodPressure?: string;
+    oxygenSaturation?: number;
+    glucoseLevel?: number;
+  };
 }
 
 export interface PatientNotification {
@@ -25,4 +31,5 @@ export interface Patient {
   email: string;
   medicalHistory: PatientMedicalRecord[];
   notifications?: PatientNotification[];
+  triageHistory?: any[];
 }

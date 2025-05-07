@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { TriageEntry } from '@/types/triage';
-import { Check, FileText, Printer, Save } from 'lucide-react';
+import { Check, FileText, Printer, Save, Hospital } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PrescriptionDialogProps {
@@ -16,6 +16,7 @@ interface PrescriptionDialogProps {
   onSave: (triageId: number, diagnosis: string, prescription: string, observation?: string) => void;
   onComplete: (triageId: number) => void;
   onPrint?: (triageId: number, diagnosis: string, prescription: string, observation?: string) => void;
+  onAssignUTI?: (triageId: number) => void;
 }
 
 const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
@@ -24,7 +25,8 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
   onClose,
   onSave,
   onComplete,
-  onPrint
+  onPrint,
+  onAssignUTI
 }) => {
   const [diagnosis, setDiagnosis] = useState<string>('');
   const [prescription, setPrescription] = useState<string>('');
@@ -56,6 +58,11 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
     if (!triage) return;
     onComplete(triage.id);
     onClose();
+  };
+  
+  const handleAssignUTI = () => {
+    if (!triage || !onAssignUTI) return;
+    onAssignUTI(triage.id);
   };
 
   const renderContent = () => (
@@ -147,11 +154,21 @@ const PrescriptionDialog: React.FC<PrescriptionDialogProps> = ({
   );
 
   const renderFooter = () => (
-    <div className="flex justify-between w-full">
+    <div className="flex justify-between w-full flex-col-reverse sm:flex-row gap-2">
       <Button variant="outline" onClick={onClose}>
         Cancelar
       </Button>
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap justify-end">
+        {onAssignUTI && (
+          <Button 
+            variant="outline" 
+            onClick={handleAssignUTI}
+            className="flex items-center gap-2 text-red-500 border-red-500 hover:bg-red-50"
+          >
+            <Hospital className="h-4 w-4" />
+            Encaminhar para UTI
+          </Button>
+        )}
         <Button 
           variant="outline" 
           onClick={handleSave} 
