@@ -34,7 +34,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold">Telefone</h3>
                     <p className="text-gray-600">(11) 3003-1234</p>
-                    <p className="text-gray-600">0800 123 4567 (Emergências)</p>
+                  
                   </div>
                 </div>
                 
@@ -42,7 +42,7 @@ const Contact = () => {
                   <Mail className="h-5 w-5 md:h-6 md:w-6 text-sabara-primary mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <p className="text-gray-600">contato@sabarahealth.com.br</p>
+                    <p className="text-gray-600">contato@smartcare.com.br</p>
                   </div>
                 </div>
                 
