@@ -17,7 +17,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-2">
             <Hospital className="h-8 w-8 text-sabara-primary" />
-            <span className="text-2xl font-bold text-sabara-primary">Sabara Health</span>
+            <span className="text-2xl font-bold text-sabara-primary">Smart Care</span>
           </Link>
           
           <button 

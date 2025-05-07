@@ -84,9 +84,9 @@ const TriageDemo: React.FC = () => {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-2">Triagem Automatizada com IA</h2>
+          <h2 className="text-3xl font-bold mb-2">Triagem Automatizada</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            Nossa tecnologia de inteligência artificial analisa seus sintomas e determina a prioridade do seu atendimento.
+            Nossa tecnologia analisa seus sintomas e determina a prioridade do seu atendimento.
             Experimente nossa demonstração interativa abaixo.
           </p>
         </div>

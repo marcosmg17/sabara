@@ -20,7 +20,7 @@ const Login = () => {
         <div className="flex justify-center mb-6">
           <div className="flex items-center space-x-2">
             <Hospital className="h-8 w-8 text-sabara-primary" />
-            <span className="text-2xl font-bold text-sabara-primary">Sabara Health</span>
+            <span className="text-2xl font-bold text-sabara-primary">Smart Care</span>
           </div>
         </div>
         <LoginForm />
