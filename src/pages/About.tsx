@@ -16,7 +16,7 @@ const About = () => {
             <div>
               <h2 className="text-2xl font-semibold mb-4">Nossa História</h2>
               <p className="text-gray-600 mb-4">
-                O Hospital Sabara Health é uma instituição de referência em saúde, com mais de 20 anos
+                A Smart Care é uma instituição de referência em saúde, com mais de 5 anos
                 de experiência no atendimento de excelência. Nossa missão é proporcionar o melhor
                 cuidado possível para nossos pacientes, combinando tecnologia de ponta com atendimento
                 humanizado.
@@ -35,7 +35,7 @@ const About = () => {
             <div className="p-6 bg-white rounded-lg shadow-md">
               <Building className="h-12 w-12 text-sabara-primary mb-4" />
               <h3 className="text-xl font-semibold mb-2">Infraestrutura Moderna</h3>
-              <p className="text-gray-600">Equipamentos de última geração e instalações confortáveis.</p>
+              <p className="text-gray-600">sistema de última geração.</p>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-md">
               <Users className="h-12 w-12 text-sabara-primary mb-4" />
