@@ -94,10 +94,10 @@ export const useDoctorActions = () => {
   });
 
   const toggleDoctorAvailability = useMutation({
-    mutationFn: async ({ doctorId }: { doctorId: number }) => {
+    mutationFn: async ({ doctorId, available }: { doctorId: number, available?: boolean }) => {
       const currentDoctors = JSON.parse(localStorage.getItem('doctors') || '[]') as Doctor[];
       const updatedDoctors = currentDoctors.map(doc => 
-        doc.id === doctorId ? { ...doc, available: !doc.available } : doc
+        doc.id === doctorId ? { ...doc, available: available !== undefined ? available : !doc.available } : doc
       );
       
       localStorage.setItem('doctors', JSON.stringify(updatedDoctors));

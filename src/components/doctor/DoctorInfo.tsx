@@ -12,7 +12,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ doctor }) => {
   const { toggleDoctorAvailability } = useDoctorInfo();
 
   const handleAvailabilityChange = (checked: boolean) => {
-    toggleDoctorAvailability.mutate({ doctorId: doctor.id, available: checked });
+    toggleDoctorAvailability.mutate({ doctorId: doctor.id });
   };
 
   return (

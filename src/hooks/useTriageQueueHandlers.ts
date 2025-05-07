@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useTriageQueue } from '@/hooks/useTriageQueue';
 import { useTriageActions } from '@/hooks/useTriageActions';
@@ -86,7 +87,11 @@ export const useTriageQueueHandlers = () => {
       onSuccess: (data) => {
         console.log("Successfully assigned nurse:", data);
         if (data?.triage) {
-          setSelectedTriage(data.triage);
+          const triageWithCorrectStatus: TriageEntry = {
+            ...data.triage,
+            status: "nurse-triage" // Ensure we use the literal string type
+          };
+          setSelectedTriage(triageWithCorrectStatus);
           setIsMeasurementsOpen(true);
         }
       },
