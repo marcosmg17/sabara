@@ -16,6 +16,9 @@ import StaffDashboard from "./pages/StaffDashboard";
 import NurseDashboard from "./pages/NurseDashboard";
 import PatientHistory from "./pages/PatientHistory";
 import AdminDashboard from "./pages/AdminDashboard";
+import PreTriage from "./pages/PreTriage";
+import Checkin from "./pages/Checkin";
+import Tracking from "./pages/Tracking";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +40,9 @@ const App = () => (
           <Route path="/nurse-dashboard" element={<NurseDashboard />} />
           <Route path="/patient-history" element={<PatientHistory />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/pre-triage" element={<PreTriage />} />
+          <Route path="/checkin" element={<Checkin />} />
+          <Route path="/tracking" element={<Tracking />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
