@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Hospital, Menu, X, Smartphone, QrCode } from 'lucide-react';
@@ -20,7 +21,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2" onClick={closeMenu}>
+          <Link to="/home" className="flex items-center space-x-2" onClick={closeMenu}>
             <Hospital className="h-8 w-8 text-sabara-primary" />
             <span className="text-xl font-bold text-sabara-primary">Smart Care</span>
           </Link>
@@ -28,9 +29,9 @@ const Header: React.FC = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link 
-              to="/" 
+              to="/home" 
               className={`text-gray-700 hover:text-sabara-primary transition-colors ${
-                location.pathname === '/' ? 'text-sabara-primary font-semibold' : ''
+                location.pathname === '/home' ? 'text-sabara-primary font-semibold' : ''
               }`}
             >
               Início
@@ -69,7 +70,7 @@ const Header: React.FC = () => {
                 </Link>
               </Button>
               <Button asChild size="sm">
-                <Link to="/login">
+                <Link to="/">
                   Login
                 </Link>
               </Button>
@@ -95,9 +96,9 @@ const Header: React.FC = () => {
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col space-y-2">
               <Link 
-                to="/" 
+                to="/home" 
                 className={`py-2 px-4 text-gray-700 hover:text-sabara-primary transition-colors ${
-                  location.pathname === '/' ? 'text-sabara-primary font-semibold' : ''
+                  location.pathname === '/home' ? 'text-sabara-primary font-semibold' : ''
                 }`}
                 onClick={closeMenu}
               >
@@ -139,7 +140,7 @@ const Header: React.FC = () => {
                   </Link>
                 </Button>
                 <Button asChild size="sm" className="w-full">
-                  <Link to="/login" onClick={closeMenu}>
+                  <Link to="/" onClick={closeMenu}>
                     Login
                   </Link>
                 </Button>
