@@ -13,10 +13,16 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, Calendar, TestTube, Stethoscope, Bell, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [user, setUser] = useState(null);
+  const [triageHistory, setTriageHistory] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [examResults, setExamResults] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const currentUser = sessionStorage.getItem('currentUser');
@@ -32,7 +38,79 @@ const Dashboard = () => {
     }
 
     setUser(userData);
+
+    // Load mock data for the patient
+    setTriageHistory([
+      {
+        id: 1,
+        date: new Date().toISOString(),
+        symptoms: ['Febre', 'Dor de cabeça'],
+        priority: 'Moderado',
+        recommendation: 'Procurar atendimento médico em até 4 horas'
+      }
+    ]);
+
+    setAppointments([
+      {
+        id: 1,
+        date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        doctor: 'Dr. João Silva',
+        specialty: 'Clínico Geral',
+        status: 'Agendado'
+      }
+    ]);
+
+    setExamResults([
+      {
+        id: 1,
+        name: 'Hemograma Completo',
+        date: new Date().toISOString(),
+        status: 'Disponível',
+        pdfLink: '#'
+      }
+    ]);
+
+    setNotifications([
+      {
+        id: 1,
+        date: new Date().toISOString(),
+        title: 'Consulta agendada',
+        message: 'Sua consulta foi agendada para amanhã às 14h',
+        read: false
+      }
+    ]);
   }, [navigate]);
+
+  const handleTriageSubmit = (triageData) => {
+    // Add to triage history
+    setTriageHistory(prev => [triageData, ...prev]);
+    
+    toast({
+      title: "Pré-triagem enviada",
+      description: "Sua pré-triagem foi registrada com sucesso",
+    });
+  };
+
+  const handleMarkAsRead = (notificationId) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
 
   if (!user) {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
@@ -43,7 +121,7 @@ const Dashboard = () => {
       <Header />
       <main className="flex-grow pt-16">
         <div className="container mx-auto px-4 py-8">
-          <DashboardHeader user={user} />
+          <DashboardHeader userName={user.name} />
           
           {/* Quick Actions */}
           <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -93,23 +171,27 @@ const Dashboard = () => {
             </TabsList>
 
             <TabsContent value="triage">
-              <TriageForm />
+              <TriageForm onTriageSubmit={handleTriageSubmit} />
             </TabsContent>
 
             <TabsContent value="appointments">
-              <AppointmentList />
+              <AppointmentList appointments={appointments} />
             </TabsContent>
 
             <TabsContent value="exams">
-              <ExamResults />
+              <ExamResults examResults={examResults} />
             </TabsContent>
 
             <TabsContent value="history">
-              <TriageHistory />
+              <TriageHistory triageHistory={triageHistory} />
             </TabsContent>
 
             <TabsContent value="notifications">
-              <PatientNotifications />
+              <PatientNotifications 
+                notifications={notifications}
+                onMarkAsRead={handleMarkAsRead}
+                formatDate={formatDate}
+              />
             </TabsContent>
           </Tabs>
         </div>
