@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Smartphone, Clock, AlertTriangle } from 'lucide-react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 
 const PreTriage = () => {
@@ -252,7 +251,7 @@ const PreTriage = () => {
                 
                 {qrCode && (
                   <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-                    <QRCode 
+                    <QRCodeSVG 
                       value={qrCode} 
                       size={200}
                       className="mx-auto"
